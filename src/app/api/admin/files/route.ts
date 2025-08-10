@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
-import dbConnect from '@/lib/mongodb'
-import { User } from '@/models/User'
-import { File } from '@/models/File'
+import { initializeModels } from '@/models'
 
 export async function GET(request: NextRequest) {
   try {
-    await dbConnect()
+    const { User, File } = await initializeModels()
     
     const token = request.cookies.get('token')?.value
     if (!token) {

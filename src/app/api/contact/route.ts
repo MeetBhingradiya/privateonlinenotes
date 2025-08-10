@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import dbConnect from '@/lib/mongodb'
+import { initializeModels } from '@/models'
 
 // In production, you would integrate with email service like SendGrid, AWS SES, etc.
 const sendEmail = async (to: string, subject: string, message: string, from: string, name: string) => {
@@ -10,7 +10,7 @@ const sendEmail = async (to: string, subject: string, message: string, from: str
 
 export async function POST(request: NextRequest) {
   try {
-    await dbConnect()
+    await initializeModels() // Initialize DB connection
     
     const { name, email, subject, message } = await request.json()
 

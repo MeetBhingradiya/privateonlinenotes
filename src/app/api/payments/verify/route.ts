@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
-import dbConnect from '@/lib/mongodb'
-import { User } from '@/models/User'
+import { initializeModels } from '@/models'
 
-const verifyRazorpaySignature = (_orderId: string, _paymentId: string, _signature: string) => {
+const verifyRazorpaySignature = (orderId: string, paymentId: string, signature: string) => {
   // In production, use actual Razorpay verification
   // const expectedSignature = crypto
   //   .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
@@ -11,12 +10,14 @@ const verifyRazorpaySignature = (_orderId: string, _paymentId: string, _signatur
   //   .digest('hex')
   
   // For development, always return true
+  // TODO: In production, implement actual verification using orderId, paymentId, and signature
+  console.log('Verifying payment:', { orderId, paymentId, signature })
   return true
 }
 
 export async function POST(request: NextRequest) {
   try {
-    await dbConnect()
+    const { User } = await initializeModels()
     
     const token = request.cookies.get('token')?.value
     if (!token) {

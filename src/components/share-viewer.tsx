@@ -1,13 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { Editor } from '@monaco-editor/react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Download, Copy, Home, User } from 'lucide-react'
-import { useTheme } from 'next-themes'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { formatDate, formatFileSize } from '@/lib/utils'
+import { MonacoEditor } from '@/components/editor/monaco-editor'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 
@@ -30,42 +29,7 @@ interface ShareViewerProps {
 }
 
 export function ShareViewer({ file }: ShareViewerProps) {
-  const { theme } = useTheme()
   const [copied, setCopied] = useState(false)
-
-  const getLanguage = (filename: string): string => {
-    const ext = filename.split('.').pop()?.toLowerCase()
-    const languageMap: Record<string, string> = {
-      js: 'javascript',
-      jsx: 'javascript',
-      ts: 'typescript',
-      tsx: 'typescript',
-      py: 'python',
-      html: 'html',
-      css: 'css',
-      scss: 'scss',
-      json: 'json',
-      md: 'markdown',
-      xml: 'xml',
-      sql: 'sql',
-      yaml: 'yaml',
-      yml: 'yaml',
-      sh: 'shell',
-      bash: 'shell',
-      php: 'php',
-      java: 'java',
-      cpp: 'cpp',
-      c: 'c',
-      cs: 'csharp',
-      go: 'go',
-      rs: 'rust',
-      rb: 'ruby',
-      swift: 'swift',
-      kt: 'kotlin',
-      dart: 'dart',
-    }
-    return languageMap[ext || ''] || 'plaintext'
-  }
 
   const handleDownload = () => {
     const blob = new Blob([file.content || ''], { type: 'text/plain' })
@@ -156,7 +120,7 @@ export function ShareViewer({ file }: ShareViewerProps) {
                   <h4 className="font-medium text-sm text-muted-foreground mb-1">
                     Language
                   </h4>
-                  <p className="text-sm capitalize">{getLanguage(file.name)}</p>
+                  <p className="text-sm capitalize">{file.language || 'plaintext'}</p>
                 </div>
                 <div>
                   <h4 className="font-medium text-sm text-muted-foreground mb-1">
@@ -198,30 +162,13 @@ export function ShareViewer({ file }: ShareViewerProps) {
 
           {/* Editor */}
           <div className="lg:col-span-3">
-            <Card className="h-[calc(100vh-12rem)]">
-              <CardContent className="p-0 h-full">
-                <Editor
-                  height="100%"
-                  language={getLanguage(file.name)}
-                  value={file.content || ''}
-                  theme={theme === 'dark' ? 'vs-dark' : 'light'}
-                  options={{
-                    readOnly: true,
-                    fontSize: 14,
-                    fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'SF Mono', monospace",
-                    minimap: { enabled: true },
-                    scrollBeyondLastLine: false,
-                    automaticLayout: true,
-                    tabSize: 2,
-                    lineNumbers: 'on',
-                    folding: true,
-                    wordWrap: 'on',
-                    contextmenu: false,
-                    selectOnLineNumbers: false,
-                  }}
-                />
-              </CardContent>
-            </Card>
+            <div className="h-[calc(100vh-12rem)]">
+              <MonacoEditor
+                file={file as any}
+                onSave={() => {}} // Read-only, no save functionality
+                readOnly={true}
+              />
+            </div>
           </div>
         </div>
       </div>

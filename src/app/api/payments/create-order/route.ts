@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
-import dbConnect from '@/lib/mongodb'
-import { User } from '@/models/User'
+import { initializeModels } from '@/models'
 
 // Mock Razorpay for development - replace with actual Razorpay in production
 const createRazorpayOrder = async (amount: number, currency: string = 'INR', notes: any = {}) => {
@@ -32,7 +31,7 @@ const createRazorpayOrder = async (amount: number, currency: string = 'INR', not
 export async function POST(request: NextRequest) {
   try {
     console.log('🔄 Starting order creation...')
-    await dbConnect()
+    const { User } = await initializeModels()
     
     const token = request.cookies.get('token')?.value
     if (!token) {

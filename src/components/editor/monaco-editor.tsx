@@ -19,9 +19,10 @@ interface FileItem {
 interface MonacoEditorProps {
   file: FileItem
   onSave: (content: string) => void
+  readOnly?: boolean
 }
 
-export function MonacoEditor({ file, onSave }: MonacoEditorProps) {
+export function MonacoEditor({ file, onSave, readOnly = false }: MonacoEditorProps) {
   const { theme } = useTheme()
   const [content, setContent] = useState(file.content || '')
   const [hasChanges, setHasChanges] = useState(false)
@@ -146,14 +147,16 @@ export function MonacoEditor({ file, onSave }: MonacoEditorProps) {
             <History className="h-4 w-4 mr-1" />
             History
           </Button>
-          <Button
-            onClick={handleSave}
-            disabled={!hasChanges || saving}
-            size="sm"
-          >
-            <Save className="h-4 w-4 mr-1" />
-            {saving ? 'Saving...' : 'Save'}
-          </Button>
+          {!readOnly && (
+            <Button
+              onClick={handleSave}
+              disabled={!hasChanges || saving}
+              size="sm"
+            >
+              <Save className="h-4 w-4 mr-1" />
+              {saving ? 'Saving...' : 'Save'}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -164,8 +167,10 @@ export function MonacoEditor({ file, onSave }: MonacoEditorProps) {
           language={getLanguage(file.name)}
           value={content}
           onChange={(value) => {
-            setContent(value || '')
-            setHasChanges(value !== file.content)
+            if (!readOnly) {
+              setContent(value || '')
+              setHasChanges(value !== file.content)
+            }
           }}
           theme={theme === 'dark' ? 'vs-dark' : 'light'}
           options={{
@@ -187,6 +192,7 @@ export function MonacoEditor({ file, onSave }: MonacoEditorProps) {
             quickSuggestions: true,
             parameterHints: { enabled: true },
             hover: { enabled: true },
+            readOnly: readOnly,
           }}
         />
       </div>

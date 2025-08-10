@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
-import dbConnect from '@/lib/mongodb'
-import { File } from '@/models/File'
+import { initializeModels } from '@/models'
 
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    await dbConnect()
+    const { File } = await initializeModels()
     
     const token = request.cookies.get('token')?.value
     if (!token) {
@@ -38,7 +37,7 @@ export async function PUT(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    await dbConnect()
+    const { File } = await initializeModels()
     
     const token = request.cookies.get('token')?.value
     if (!token) {
@@ -88,7 +87,7 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    await dbConnect()
+    const { File } = await initializeModels()
     
     const token = request.cookies.get('token')?.value
     if (!token) {

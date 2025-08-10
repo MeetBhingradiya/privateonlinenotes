@@ -18,6 +18,9 @@ export default function HomePage() {
           
           <div className="flex items-center space-x-4">
             <div className="hidden md:flex items-center space-x-6">
+              <Link href="/explore" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                Explore
+              </Link>
               <Link href="/pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
                 Pricing
               </Link>

@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import dbConnect from '@/lib/mongodb'
-import { File } from '@/models/File'
+import { initializeModels } from '@/models'
 import { randomBytes } from 'crypto'
 
 export async function POST(request: NextRequest) {
   try {
-    await dbConnect()
+    const { File } = await initializeModels()
     
     const { name, content, language, expiryHours } = await request.json()
 

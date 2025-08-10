@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   // This is for debugging only - remove in production
   if (process.env.NODE_ENV !== 'development') {
     return NextResponse.json({ message: 'Not available in production' }, { status: 403 })

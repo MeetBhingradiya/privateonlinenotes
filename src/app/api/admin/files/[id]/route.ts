@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
-import dbConnect from '@/lib/mongodb'
-import { User } from '@/models/User'
-import { File } from '@/models/File'
+import { initializeModels } from '@/models'
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await dbConnect()
+    const { User, File } = await initializeModels()
     
     const { id } = await params
     
@@ -48,7 +46,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await dbConnect()
+    const { User, File } = await initializeModels()
     
     const { id } = await params
     

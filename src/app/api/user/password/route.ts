@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
-import dbConnect from '@/lib/mongodb'
-import { User } from '@/models/User'
+import { initializeModels } from '@/models'
 
 export async function PUT(request: NextRequest) {
   try {
-    await dbConnect()
+    const { User } = await initializeModels()
     
     const token = request.cookies.get('token')?.value
     if (!token) {

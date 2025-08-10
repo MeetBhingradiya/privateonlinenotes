@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
-import dbConnect from '@/lib/mongodb'
-import { File } from '@/models/File'
+import { initializeModels } from '@/models'
 
 export async function GET(request: NextRequest) {
   try {
-    await dbConnect()
+    const { File } = await initializeModels()
     
     const token = request.cookies.get('token')?.value
     if (!token) {
@@ -16,10 +15,24 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const path = searchParams.get('path') || '/'
 
-    const files = await File.find({
-      owner: decoded.userId,
-      path: new RegExp(`^${path.replace(/\//g, '\\/')}[^/]*$`)
-    }).sort({ type: 1, name: 1 })
+    let files
+    if (path === '/') {
+      // Root directory - get files that don't contain any additional slashes after the initial one
+      files = await File.find({
+        owner: decoded.userId,
+        $or: [
+          { path: /^\/[^\/]+$/ }, // Matches /filename or /foldername (one level deep)
+          { path: '/' } // In case someone stored files with just '/' path
+        ]
+      }).sort({ type: 1, name: 1 })
+    } else {
+      // Subdirectory - get files that start with the current path + one more level
+      const escapedPath = path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      files = await File.find({
+        owner: decoded.userId,
+        path: new RegExp(`^${escapedPath}/[^/]+$`)
+      }).sort({ type: 1, name: 1 })
+    }
 
     return NextResponse.json(files)
   } catch (error) {
@@ -30,7 +43,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    await dbConnect()
+    const { File } = await initializeModels()
     
     const token = request.cookies.get('token')?.value
     if (!token) {
@@ -38,19 +51,22 @@ export async function POST(request: NextRequest) {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string }
-    const { name, type, path, content = '' } = await request.json()
+    const { name, type, currentPath, content = '' } = await request.json()
 
-    if (!name || !type || !path) {
+    if (!name || !type) {
       return NextResponse.json(
-        { message: 'Name, type, and path are required' },
+        { message: 'Name and type are required' },
         { status: 400 }
       )
     }
 
-    // Check if file/folder already exists
+    // Create the full path for the new item
+    const fullPath = currentPath === '/' ? `/${name}` : `${currentPath}/${name}`
+
+    // Check if file/folder already exists with the same path
     const existing = await File.findOne({
       owner: decoded.userId,
-      path,
+      path: fullPath
     })
 
     if (existing) {
@@ -63,7 +79,7 @@ export async function POST(request: NextRequest) {
     const file = await File.create({
       name,
       type,
-      path,
+      path: fullPath,
       content,
       owner: decoded.userId,
       language: type === 'file' ? getLanguageFromName(name) : undefined,
@@ -77,35 +93,35 @@ export async function POST(request: NextRequest) {
 }
 
 function getLanguageFromName(filename: string): string {
-  const ext = filename.split('.').pop()?.toLowerCase()
-  const languageMap: Record<string, string> = {
-    js: 'javascript',
-    jsx: 'javascript',
-    ts: 'typescript',
-    tsx: 'typescript',
-    py: 'python',
-    html: 'html',
-    css: 'css',
-    scss: 'scss',
-    json: 'json',
-    md: 'markdown',
-    xml: 'xml',
-    sql: 'sql',
-    yaml: 'yaml',
-    yml: 'yaml',
-    sh: 'shell',
-    bash: 'shell',
-    php: 'php',
-    java: 'java',
-    cpp: 'cpp',
-    c: 'c',
-    cs: 'csharp',
-    go: 'go',
-    rs: 'rust',
-    rb: 'ruby',
-    swift: 'swift',
-    kt: 'kotlin',
-    dart: 'dart',
-  }
-  return languageMap[ext || ''] || 'plaintext'
+    const ext = filename.split('.').pop()?.toLowerCase()
+    const languageMap: Record<string, string> = {
+        js: 'javascript',
+        jsx: 'javascript',
+        ts: 'typescript',
+        tsx: 'typescript',
+        py: 'python',
+        html: 'html',
+        css: 'css',
+        scss: 'scss',
+        json: 'json',
+        md: 'markdown',
+        xml: 'xml',
+        sql: 'sql',
+        yaml: 'yaml',
+        yml: 'yaml',
+        sh: 'shell',
+        bash: 'shell',
+        php: 'php',
+        java: 'java',
+        cpp: 'cpp',
+        c: 'c',
+        cs: 'csharp',
+        go: 'go',
+        rs: 'rust',
+        rb: 'ruby',
+        swift: 'swift',
+        kt: 'kotlin',
+        dart: 'dart',
+    }
+    return languageMap[ext || ''] || 'plaintext'
 }

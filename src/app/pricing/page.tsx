@@ -119,7 +119,7 @@ export default function PricingPage() {
             }
             script.onload = () => {
                 console.log('Razorpay script loaded successfully')
-                
+
                 if (!window.Razorpay) {
                     console.error('Razorpay object not available')
                     toast.error('Payment gateway not available')
@@ -170,7 +170,7 @@ export default function PricingPage() {
 
                 console.log('Opening Razorpay checkout with options:', options)
                 const rzp = new window.Razorpay(options)
-                
+
                 rzp.on('payment.failed', function (response: any) {
                     console.error('Payment failed:', response.error)
                     toast.error(`Payment failed: ${response.error.description}`)
