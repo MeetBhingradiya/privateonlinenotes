@@ -1,461 +1,474 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { Plus, FileText, Settings, Trash2, Edit, Pin, PinOff } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { GlassCard } from '@/components/ui/glass-card';
-import { getRelativeTime, formatFileSize } from '@/lib/utils';
+import { useAuth } from '@/components/providers/auth-provider'
+import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent } from '@/components/ui/card'
+import { FileText, FolderPlus, Search, Grid, List, Sun, Moon, LogOut, Settings, Share, Trash2, Crown, Zap } from 'lucide-react'
+import { useTheme } from 'next-themes'
+import { formatDate, formatFileSize } from '@/lib/utils'
+import { MonacoEditor } from '@/components/editor/monaco-editor'
+import toast from 'react-hot-toast'
 
-interface DashboardFile {
-  id: string;
-  title: string;
-  slug: string;
-  description?: string;
-  permission: 'public' | 'unlisted' | 'private';
-  isPinned: boolean;
-  tags: string[];
-  fileSize: number;
-  viewCount: number;
-  createdAt: string;
-  updatedAt: string;
+interface FileItem {
+  _id: string
+  name: string
+  type: 'file' | 'folder'
+  content?: string
+  language?: string
+  size: number
+  createdAt: string
+  updatedAt: string
+  isPublic: boolean
+  shareCode?: string
 }
 
-const getPermissionColor = (permission: string) => {
-  switch (permission) {
-    case 'public': return 'text-green-400';
-    case 'unlisted': return 'text-yellow-400';
-    case 'private': return 'text-red-400';
-    default: return 'text-white';
-  }
-};
-
 export default function DashboardPage() {
-  const [files, setFiles] = useState<DashboardFile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
-  const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
-  const [isDeleting, setIsDeleting] = useState(false);
+  const { user, logout, loading: authLoading } = useAuth()
+  const router = useRouter()
+  const { theme, setTheme } = useTheme()
+  const [files, setFiles] = useState<FileItem[]>([])
+  const [currentPath, setCurrentPath] = useState('/')
+  const [selectedFile, setSelectedFile] = useState<FileItem | null>(null)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isCreating, setIsCreating] = useState(false)
+  const [newItemName, setNewItemName] = useState('')
+  const [newItemType, setNewItemType] = useState<'file' | 'folder'>('file')
+  const [loading, setLoading] = useState(true)
+
+  const fetchFiles = useCallback(async () => {
+    try {
+      setLoading(true)
+      const response = await fetch(`/api/files?path=${encodeURIComponent(currentPath)}`)
+      if (response.ok) {
+        const data = await response.json()
+        setFiles(data)
+      } else {
+        toast.error('Failed to load files')
+      }
+    } catch {
+      toast.error('Error loading files')
+    } finally {
+      setLoading(false)
+    }
+  }, [currentPath])
 
   useEffect(() => {
-    fetchUserFiles();
-  }, []);
+    fetchFiles()
+  }, [currentPath, fetchFiles])
 
-  const fetchUserFiles = async () => {
-    try {
-      const response = await fetch('/api/user/files');
-      const data = await response.json();
-
-      if (response.ok) {
-        setFiles(data.files);
-        setUser(data.user);
-      } else if (response.status === 401) {
-        // User not authenticated
-        window.location.href = '/auth/login';
-      }
-    } catch (error) {
-      console.error('Error fetching files:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handlePinToggle = async (fileId: string, isPinned: boolean) => {
-    try {
-      const response = await fetch(`/api/files/${fileId}/pin`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isPinned: !isPinned }),
-      });
-
-      if (response.ok) {
-        setFiles(prev => prev.map(file => 
-          file.id === fileId ? { ...file, isPinned: !isPinned } : file
-        ));
-      }
-    } catch (error) {
-      console.error('Error toggling pin:', error);
-    }
-  };
-
-  const handleDelete = async (fileId: string) => {
-    if (!confirm('Are you sure you want to delete this file?')) return;
-
-    try {
-      const response = await fetch(`/api/files/${fileId}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        setFiles(prev => prev.filter(file => file.id !== fileId));
-        setSelectedFiles(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(fileId);
-          return newSet;
-        });
-      }
-    } catch (error) {
-      console.error('Error deleting file:', error);
-    }
-  };
-
-  const handleBulkDelete = async () => {
-    if (selectedFiles.size === 0) return;
-    
-    if (!confirm(`Are you sure you want to delete ${selectedFiles.size} file(s)?`)) return;
-
-    setIsDeleting(true);
-    try {
-      const response = await fetch('/api/user/files', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileIds: Array.from(selectedFiles) }),
-      });
-
-      if (response.ok) {
-        setFiles(prev => prev.filter(file => !selectedFiles.has(file.id)));
-        setSelectedFiles(new Set());
-      }
-    } catch (error) {
-      console.error('Error bulk deleting files:', error);
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  const handleSelectFile = (fileId: string) => {
-    setSelectedFiles(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(fileId)) {
-        newSet.delete(fileId);
-      } else {
-        newSet.add(fileId);
-      }
-      return newSet;
-    });
-  };
-
-  const handleSelectAll = () => {
-    if (selectedFiles.size === files.length) {
-      setSelectedFiles(new Set());
-    } else {
-      setSelectedFiles(new Set(files.map(file => file.id)));
-    }
-  };
-
-  if (loading) {
+  // Show loading while auth is being checked
+  if (authLoading) {
     return (
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center">
-          <div className="animate-spin h-12 w-12 border-4 border-white/20 border-t-white rounded-full mx-auto mb-4"></div>
-          <p className="text-white/70">Loading your dashboard...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Loading...</div>
       </div>
-    );
+    )
   }
 
+  // Redirect if not authenticated
   if (!user) {
-    return (
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-2xl mx-auto text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">Authentication Required</h1>
-          <p className="text-white/70 mb-6">
-            Please sign in to access your dashboard.
-          </p>
-          <Button variant="glass" asChild>
-            <Link href="/auth/login">Sign In</Link>
+    router.push('/auth/login')
+    return null
+  }
+
+  const createItem = async () => {
+    if (!newItemName.trim()) {
+      toast.error('Please enter a name')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/files', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newItemName,
+          type: newItemType,
+          path: currentPath === '/' ? `/${newItemName}` : `${currentPath}/${newItemName}`,
+        }),
+      })
+
+      if (response.ok) {
+        const newItem = await response.json()
+        setFiles([...files, newItem])
+        setIsCreating(false)
+        setNewItemName('')
+        toast.success(`${newItemType === 'file' ? 'File' : 'Folder'} created successfully`)
+      } else {
+        const error = await response.json()
+        toast.error(error.message || 'Failed to create item')
+      }
+    } catch {
+      toast.error('Error creating item')
+    }
+  }
+
+  const openFile = async (file: FileItem) => {
+    if (file.type === 'folder') {
+      const newPath = currentPath === '/' ? `/${file.name}` : `${currentPath}/${file.name}`
+      setCurrentPath(newPath)
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/files/${file._id}`)
+      if (response.ok) {
+        const fileData = await response.json()
+        setSelectedFile(fileData)
+      } else {
+        toast.error('Failed to open file')
+      }
+    } catch {
+      toast.error('Error opening file')
+    }
+  }
+
+  const saveFile = async (content: string) => {
+    if (!selectedFile) return
+
+    try {
+      const response = await fetch(`/api/files/${selectedFile._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content }),
+      })
+
+      if (response.ok) {
+        const updatedFile = await response.json()
+        setSelectedFile(updatedFile)
+        toast.success('File saved successfully')
+      } else {
+        toast.error('Failed to save file')
+      }
+    } catch {
+      toast.error('Error saving file')
+    }
+  }
+
+  const shareFile = async (file: FileItem) => {
+    try {
+      const response = await fetch(`/api/files/${file._id}/share`, {
+        method: 'POST',
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        navigator.clipboard.writeText(`${window.location.origin}/share/${data.shareCode}`)
+        toast.success('Share link copied to clipboard!')
+      } else {
+        toast.error('Failed to generate share link')
+      }
+    } catch {
+      toast.error('Error sharing file')
+    }
+  }
+
+  const deleteFile = async (file: FileItem) => {
+    if (!confirm(`Are you sure you want to delete ${file.name}?`)) return
+
+    try {
+      const response = await fetch(`/api/files/${file._id}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        setFiles(files.filter(f => f._id !== file._id))
+        if (selectedFile?._id === file._id) {
+          setSelectedFile(null)
+        }
+        toast.success('Item deleted successfully')
+      } else {
+        toast.error('Failed to delete item')
+      }
+    } catch {
+      toast.error('Error deleting item')
+    }
+  }
+
+  const filteredFiles = files.filter(file =>
+    file.name.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  const handleLogout = async () => {
+    await logout()
+    router.push('/auth/login')
+  }
+
+  if (!user) return null
+
+  return (
+    <div className="flex h-screen bg-background">
+      {/* Sidebar */}
+      <div className="w-64 border-r bg-card p-4">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-primary">Notta.in</h1>
+          <p className="text-sm text-muted-foreground">Welcome, {user.name}</p>
+          <div className="mt-2 text-xs text-muted-foreground">
+            Plan: <span className="capitalize font-medium">{user.plan || 'Free'}</span>
+          </div>
+        </div>
+
+        {/* Plan Status & Upgrade Section */}
+        {(!user.plan || user.plan === 'free') && (
+          <div className="mb-6 p-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="flex items-center mb-2">
+              <Crown className="h-4 w-4 text-blue-600 mr-2" />
+              <span className="text-sm font-medium text-blue-800 dark:text-blue-200">Upgrade Available</span>
+            </div>
+            <p className="text-xs text-blue-700 dark:text-blue-300 mb-3">
+              Unlock unlimited files, advanced sharing, and premium features
+            </p>
+            <Link href="/pricing">
+              <Button size="sm" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                <Zap className="h-3 w-3 mr-1" />
+                Upgrade Now
+              </Button>
+            </Link>
+          </div>
+        )}
+
+        {user.plan === 'premium' && (
+          <div className="mb-6 p-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-lg border border-green-200 dark:border-green-800">
+            <div className="flex items-center mb-2">
+              <Crown className="h-4 w-4 text-green-600 mr-2" />
+              <span className="text-sm font-medium text-green-800 dark:text-green-200">Premium Plan</span>
+            </div>
+            <p className="text-xs text-green-700 dark:text-green-300 mb-3">
+              Want even more? Check out Enterprise features
+            </p>
+            <Link href="/pricing">
+              <Button size="sm" variant="outline" className="w-full border-green-300 text-green-700 hover:bg-green-50">
+                View Enterprise
+              </Button>
+            </Link>
+          </div>
+        )}
+
+        {user.plan === 'enterprise' && (
+          <div className="mb-6 p-3 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 rounded-lg border border-amber-200 dark:border-amber-800">
+            <div className="flex items-center mb-2">
+              <Crown className="h-4 w-4 text-amber-600 mr-2" />
+              <span className="text-sm font-medium text-amber-800 dark:text-amber-200">Enterprise Plan</span>
+            </div>
+            <p className="text-xs text-amber-700 dark:text-amber-300">
+              You have the highest tier with all premium features!
+            </p>
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <Button
+            variant="ghost"
+            className="w-full justify-start"
+            onClick={() => {
+              setIsCreating(true)
+              setNewItemType('file')
+            }}
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            New File
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full justify-start"
+            onClick={() => {
+              setIsCreating(true)
+              setNewItemType('folder')
+            }}
+          >
+            <FolderPlus className="mr-2 h-4 w-4" />
+            New Folder
+          </Button>
+        </div>
+
+        <div className="mt-8 space-y-2">
+          <Button
+            variant="ghost"
+            className="w-full justify-start"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          >
+            {theme === 'dark' ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
+            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+          </Button>
+          <Link href="/profile">
+            <Button variant="ghost" className="w-full justify-start">
+              <Settings className="mr-2 h-4 w-4" />
+              Profile
+            </Button>
+          </Link>
+          <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
           </Button>
         </div>
       </div>
-    );
-  }
 
-  const pinnedFiles = files.filter(file => file.isPinned);
-  const unpinnedFiles = files.filter(file => !file.isPinned);
-
-  return (
-    <div className="container mx-auto px-4 py-16">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12">
-          <div>
-            <h1 className="text-4xl font-bold text-white mb-2">
-              Welcome back, {user.name}!
-            </h1>
-            <p className="text-white/70">
-              Manage your notes and track their performance
-            </p>
-          </div>
-          
-          <div className="flex gap-3 mt-4 md:mt-0">
-            {selectedFiles.size > 0 && (
-              <>
+      {/* Main Content */}
+      <div className="flex-1 flex">
+        {/* File Explorer */}
+        <div className="w-80 border-r bg-card">
+          <div className="p-4 border-b">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold">Files</h2>
+              <div className="flex items-center space-x-1">
                 <Button
-                  variant="destructive"
-                  onClick={handleBulkDelete}
-                  disabled={isDeleting}
-                  className="bg-red-600 hover:bg-red-700"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className={viewMode === 'grid' ? 'bg-muted' : ''}
                 >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  {isDeleting ? 'Deleting...' : `Delete ${selectedFiles.size}`}
+                  <Grid className="h-4 w-4" />
                 </Button>
                 <Button
                   variant="ghost"
-                  onClick={() => setSelectedFiles(new Set())}
-                  className="text-white"
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className={viewMode === 'list' ? 'bg-muted' : ''}
                 >
-                  Cancel
+                  <List className="h-4 w-4" />
                 </Button>
-              </>
-            )}
-            <Button variant="glass" asChild>
-              <Link href="/create">
-                <Plus className="h-4 w-4 mr-2" />
-                New Note
-              </Link>
-            </Button>
-            <Button variant="ghost" asChild className="text-white">
-              <Link href="/settings">
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </Link>
-            </Button>
+              </div>
+            </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search files..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
           </div>
-        </div>
 
-        {/* Bulk Actions Bar */}
-        {files.length > 0 && (
-          <div className="mb-6">
-            <GlassCard className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selectedFiles.size === files.length && files.length > 0}
-                      onChange={handleSelectAll}
-                      className="rounded"
-                    />
-                    <span className="text-white/70 text-sm">
-                      {selectedFiles.size === 0 
-                        ? 'Select all' 
-                        : `${selectedFiles.size} of ${files.length} selected`
-                      }
-                    </span>
-                  </label>
-                </div>
-                
-                {selectedFiles.size > 0 && (
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleBulkDelete}
-                      disabled={isDeleting}
-                      className="text-red-400 hover:text-red-300"
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Delete Selected
+          <div className="p-4">
+            {/* Breadcrumb */}
+            <div className="mb-4 text-sm text-muted-foreground">
+              {currentPath.split('/').filter(Boolean).map((part, index, arr) => (
+                <span key={index}>
+                  <button
+                    onClick={() => {
+                      const newPath = '/' + arr.slice(0, index + 1).join('/')
+                      setCurrentPath(newPath)
+                    }}
+                    className="hover:text-foreground"
+                  >
+                    {part}
+                  </button>
+                  {index < arr.length - 1 && ' / '}
+                </span>
+              ))}
+              {currentPath === '/' && 'Root'}
+            </div>
+
+            {/* Create Item Form */}
+            {isCreating && (
+              <Card className="mb-4">
+                <CardContent className="p-4">
+                  <Input
+                    placeholder={`${newItemType === 'file' ? 'File' : 'Folder'} name`}
+                    value={newItemName}
+                    onChange={(e) => setNewItemName(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && createItem()}
+                    autoFocus
+                  />
+                  <div className="flex space-x-2 mt-2">
+                    <Button size="sm" onClick={createItem}>Create</Button>
+                    <Button size="sm" variant="outline" onClick={() => setIsCreating(false)}>
+                      Cancel
                     </Button>
                   </div>
-                )}
-              </div>
-            </GlassCard>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* File List */}
+            <div className="space-y-2">
+              {loading ? (
+                <div className="text-center py-8 text-muted-foreground">Loading...</div>
+              ) : filteredFiles.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  {searchQuery ? 'No files found' : 'No files yet'}
+                </div>
+              ) : (
+                filteredFiles.map((file) => (
+                  <Card
+                    key={file._id}
+                    className={`cursor-pointer hover:bg-muted/50 transition-colors ${
+                      selectedFile?._id === file._id ? 'ring-2 ring-primary' : ''
+                    }`}
+                    onClick={() => openFile(file)}
+                  >
+                    <CardContent className="p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          {file.type === 'folder' ? (
+                            <FolderPlus className="h-4 w-4 text-blue-500" />
+                          ) : (
+                            <FileText className="h-4 w-4 text-gray-500" />
+                          )}
+                          <span className="text-sm font-medium">{file.name}</span>
+                        </div>
+                        <div className="flex space-x-1">
+                          {file.type === 'file' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                shareFile(file)
+                              }}
+                            >
+                              <Share className="h-3 w-3" />
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              deleteFile(file)
+                            }}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                      {viewMode === 'list' && (
+                        <div className="mt-1 text-xs text-muted-foreground">
+                          {formatFileSize(file.size)} • {formatDate(file.updatedAt)}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
           </div>
-        )}
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <GlassCard className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-white/70 text-sm">Total Notes</p>
-                <p className="text-2xl font-bold text-white">{files.length}</p>
-              </div>
-              <FileText className="h-8 w-8 text-blue-400" />
-            </div>
-          </GlassCard>
-
-          <GlassCard className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-white/70 text-sm">Total Views</p>
-                <p className="text-2xl font-bold text-white">
-                  {files.reduce((sum, file) => sum + file.viewCount, 0)}
-                </p>
-              </div>
-              <div className="h-8 w-8 bg-green-400 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-bold">👁</span>
-              </div>
-            </div>
-          </GlassCard>
-
-          <GlassCard className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-white/70 text-sm">Pinned Notes</p>
-                <p className="text-2xl font-bold text-white">{pinnedFiles.length}</p>
-              </div>
-              <Pin className="h-8 w-8 text-yellow-400" />
-            </div>
-          </GlassCard>
         </div>
 
-        {/* Pinned Files */}
-        {pinnedFiles.length > 0 && (
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
-              <Pin className="h-6 w-6 mr-2 text-yellow-400" />
-              Pinned Notes
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {pinnedFiles.map((file) => (
-                <FileCard 
-                  key={file.id} 
-                  file={file} 
-                  isSelected={selectedFiles.has(file.id)}
-                  onSelect={handleSelectFile}
-                  onPinToggle={handlePinToggle}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* All Files */}
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-6">
-            {pinnedFiles.length > 0 ? 'All Notes' : 'Your Notes'}
-          </h2>
-
-          {unpinnedFiles.length === 0 && pinnedFiles.length === 0 ? (
-            <GlassCard className="p-12 text-center">
-              <FileText className="h-16 w-16 text-white/30 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-white mb-2">No notes yet</h3>
-              <p className="text-white/70 mb-6">
-                Start creating and sharing your ideas with the world!
-              </p>
-              <Button variant="glass" asChild>
-                <Link href="/create">Create Your First Note</Link>
-              </Button>
-            </GlassCard>
+        {/* Editor */}
+        <div className="flex-1">
+          {selectedFile ? (
+            <MonacoEditor
+              file={selectedFile}
+              onSave={saveFile}
+            />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {unpinnedFiles.map((file) => (
-                <FileCard 
-                  key={file.id} 
-                  file={file} 
-                  isSelected={selectedFiles.has(file.id)}
-                  onSelect={handleSelectFile}
-                  onPinToggle={handlePinToggle}
-                  onDelete={handleDelete}
-                />
-              ))}
+            <div className="flex items-center justify-center h-full text-muted-foreground">
+              <div className="text-center">
+                <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                <h3 className="text-lg font-medium mb-2">No file selected</h3>
+                <p>Select a file from the sidebar to start editing</p>
+              </div>
             </div>
           )}
         </div>
       </div>
     </div>
-  );
-}
-
-function FileCard({ 
-  file, 
-  isSelected,
-  onSelect,
-  onPinToggle, 
-  onDelete 
-}: { 
-  file: DashboardFile; 
-  isSelected: boolean;
-  onSelect: (id: string) => void;
-  onPinToggle: (id: string, isPinned: boolean) => void;
-  onDelete: (id: string) => void;
-}) {
-  return (
-    <GlassCard hover className="p-6">
-      <div className="flex flex-col h-full">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-start gap-3 flex-1">
-            <input
-              type="checkbox"
-              checked={isSelected}
-              onChange={() => onSelect(file.id)}
-              className="mt-1 rounded"
-            />
-            <h3 className="text-lg font-semibold text-white line-clamp-2 flex-1">
-              <Link 
-                href={`/file/${file.slug}`}
-                className="hover:text-blue-300 transition-colors"
-              >
-                {file.title}
-              </Link>
-            </h3>
-          </div>
-          
-          <div className="flex gap-1 ml-2">
-            <button
-              onClick={() => onPinToggle(file.id, file.isPinned)}
-              className="p-1 hover:bg-white/10 rounded transition-colors"
-              title={file.isPinned ? 'Unpin' : 'Pin'}
-            >
-              {file.isPinned ? (
-                <PinOff className="h-4 w-4 text-yellow-400" />
-              ) : (
-                <Pin className="h-4 w-4 text-white/50 hover:text-yellow-400" />
-              )}
-            </button>
-            
-            <Link
-              href={`/edit/${file.slug}`}
-              className="p-1 hover:bg-white/10 rounded transition-colors"
-              title="Edit"
-            >
-              <Edit className="h-4 w-4 text-white/50 hover:text-blue-400" />
-            </Link>
-            
-            <button
-              onClick={() => onDelete(file.id)}
-              className="p-1 hover:bg-white/10 rounded transition-colors"
-              title="Delete"
-            >
-              <Trash2 className="h-4 w-4 text-white/50 hover:text-red-400" />
-            </button>
-          </div>
-        </div>
-
-        {file.description && (
-          <p className="text-white/70 text-sm mb-3 line-clamp-2">
-            {file.description}
-          </p>
-        )}
-
-        <div className="flex items-center gap-2 mb-3">
-          <span className={`text-xs px-2 py-1 rounded-full bg-white/10 ${getPermissionColor(file.permission)}`}>
-            {file.permission}
-          </span>
-          {file.tags.slice(0, 2).map(tag => (
-            <span key={tag} className="text-xs px-2 py-1 rounded-full bg-white/5 text-white/60">
-              #{tag}
-            </span>
-          ))}
-          {file.tags.length > 2 && (
-            <span className="text-xs text-white/40">+{file.tags.length - 2}</span>
-          )}
-        </div>
-
-        <div className="mt-auto pt-3 border-t border-white/10">
-          <div className="flex items-center justify-between text-white/60 text-xs">
-            <span>{getRelativeTime(new Date(file.createdAt))}</span>
-            <div className="flex items-center gap-3">
-              <span>{file.viewCount} views</span>
-              <span>{formatFileSize(file.fileSize)}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </GlassCard>
-  );
+  )
 }

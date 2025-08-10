@@ -1,71 +1,55 @@
-import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
-import { getUserFromToken, comparePassword, hashPassword } from '@/lib/auth';
+import { NextRequest, NextResponse } from 'next/server'
+import jwt from 'jsonwebtoken'
+import bcrypt from 'bcryptjs'
+import dbConnect from '@/lib/mongodb'
+import { User } from '@/models/User'
 
 export async function PUT(request: NextRequest) {
   try {
-    await connectDB();
-
-    // Get user from token
-    const user = await getUserFromToken(request);
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
+    await dbConnect()
+    
+    const token = request.cookies.get('token')?.value
+    if (!token) {
+      return NextResponse.json({ message: 'Not authenticated' }, { status: 401 })
     }
 
-    const { currentPassword, newPassword } = await request.json();
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string }
+    const { currentPassword, newPassword } = await request.json()
 
-    // Validate input
     if (!currentPassword || !newPassword) {
       return NextResponse.json(
-        { error: 'Current password and new password are required' },
+        { message: 'Current password and new password are required' },
         { status: 400 }
-      );
+      )
     }
 
-    if (newPassword.length < 8) {
+    if (newPassword.length < 6) {
       return NextResponse.json(
-        { error: 'New password must be at least 8 characters long' },
+        { message: 'New password must be at least 6 characters long' },
         { status: 400 }
-      );
+      )
     }
 
-    // Verify current password
-    if (!user.password) {
+    const user = await User.findById(decoded.userId)
+    if (!user) {
+      return NextResponse.json({ message: 'User not found' }, { status: 404 })
+    }
+
+    const isValidPassword = await bcrypt.compare(currentPassword, user.password)
+    if (!isValidPassword) {
       return NextResponse.json(
-        { error: 'Account does not have a password set' },
+        { message: 'Current password is incorrect' },
         { status: 400 }
-      );
+      )
     }
 
-    const isCurrentPasswordValid = await comparePassword(currentPassword, user.password);
-    if (!isCurrentPasswordValid) {
-      return NextResponse.json(
-        { error: 'Current password is incorrect' },
-        { status: 400 }
-      );
-    }
+    const hashedNewPassword = await bcrypt.hash(newPassword, 12)
+    user.password = hashedNewPassword
+    await user.save()
 
-    // Hash new password
-    const hashedNewPassword = await hashPassword(newPassword);
-
-    // Update password
-    user.password = hashedNewPassword;
-    user.updatedAt = new Date();
-    await user.save();
-
-    return NextResponse.json({
-      success: true,
-      message: 'Password updated successfully'
-    });
-
+    return NextResponse.json({ message: 'Password updated successfully' })
   } catch (error) {
-    console.error('Error updating password:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error('Password update error:', error)
+    return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
   }
 }

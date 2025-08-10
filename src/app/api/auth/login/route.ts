@@ -1,88 +1,65 @@
-import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
-import connectDB from '@/lib/mongodb';
-import User from '@/models/User';
-import { generateToken } from '@/lib/auth';
+import { NextRequest, NextResponse } from 'next/server'
+import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
+import dbConnect from '@/lib/mongodb'
+import { User } from '@/models/User'
 
 export async function POST(request: NextRequest) {
   try {
-    await connectDB();
+    await dbConnect()
     
-    const { email, password } = await request.json();
+    const { email, password } = await request.json()
 
-    // Validate input
     if (!email || !password) {
       return NextResponse.json(
-        { error: 'Email and password are required' },
+        { message: 'Email and password are required' },
         { status: 400 }
-      );
+      )
     }
 
-    // Find user
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await User.findOne({ email })
     if (!user) {
       return NextResponse.json(
-        { error: 'Invalid credentials' },
+        { message: 'Invalid credentials' },
         { status: 401 }
-      );
+      )
     }
 
-    // Check if user is anonymous (shouldn't have password login)
-    if (user.isAnonymous) {
-      return NextResponse.json(
-        { error: 'Invalid login method for this account' },
-        { status: 401 }
-      );
-    }
-
-    // Verify password
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    const isValidPassword = await bcrypt.compare(password, user.password)
     if (!isValidPassword) {
       return NextResponse.json(
-        { error: 'Invalid credentials' },
+        { message: 'Invalid credentials' },
         { status: 401 }
-      );
+      )
     }
 
-    // Update last login
-    user.lastLoginAt = new Date();
-    await user.save();
+    const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET!,
+      { expiresIn: '7d' }
+    )
 
-    // Generate JWT token
-    const token = generateToken({
-      userId: user._id,
+    const response = NextResponse.json({
+      id: user._id,
       email: user.email,
-      isEmailVerified: user.isEmailVerified,
-    });
+      name: user.name,
+      plan: user.plan,
+      avatar: user.avatar,
+    })
 
-    // Set cookie
-    const response = NextResponse.json(
-      {
-        message: 'Login successful',
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          isEmailVerified: user.isEmailVerified,
-          isAnonymous: user.isAnonymous,
-        },
-      },
-      { status: 200 }
-    );
-
-    response.cookies.set('auth-token', token, {
+    response.cookies.set('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
-    });
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    })
 
-    return response;
+    return response
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Login error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { message: 'Internal server error' },
       { status: 500 }
-    );
+    )
   }
 }

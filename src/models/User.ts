@@ -1,118 +1,51 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose from 'mongoose'
 
-export interface IUser extends Document {
-  name: string;
-  email: string;
-  password?: string;
-  isAnonymous: boolean;
-  isEmailVerified: boolean;
-  emailVerificationToken?: string;
-  emailVerificationExpires?: Date;
-  passwordResetToken?: string;
-  passwordResetExpires?: Date;
-  otpCode?: string;
-  otpExpires?: Date;
-  passkeys: Array<{
-    id: string;
-    publicKey: string;
-    counter: number;
-    name: string;
-    createdAt: Date;
-  }>;
-  preferences: {
-    theme: 'light' | 'dark' | 'system';
-    language: string;
-  };
-  subscription: {
-    type: 'free' | 'premium';
-    expiresAt?: Date;
-  };
-  lastLoginAt?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-const UserSchema = new Schema<IUser>({
+const UserSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    trim: true,
-    maxlength: 100
   },
   email: {
     type: String,
     required: true,
     unique: true,
-    lowercase: true,
-    trim: true
   },
   password: {
     type: String,
-    required: function(this: IUser): boolean {
-      return !this.isAnonymous;
-    },
-    minlength: 6
+    required: true,
   },
-  isAnonymous: {
+  plan: {
+    type: String,
+    enum: ['free', 'premium'],
+    default: 'free',
+  },
+  avatar: String,
+  isBlocked: {
     type: Boolean,
-    default: false
+    default: false,
   },
-  isEmailVerified: {
-    type: Boolean,
-    default: false
-  },
-  emailVerificationToken: String,
-  emailVerificationExpires: Date,
-  passwordResetToken: String,
-  passwordResetExpires: Date,
-  otpCode: String,
-  otpExpires: Date,
-  passkeys: [{
-    id: String,
-    publicKey: String,
-    counter: Number,
-    name: String,
+  paymentHistory: [{
+    orderId: String,
+    paymentId: String,
+    planId: String,
+    amount: Number,
     createdAt: {
       type: Date,
-      default: Date.now
-    }
+      default: Date.now,
+    },
   }],
-  preferences: {
-    theme: {
-      type: String,
-      enum: ['light', 'dark', 'system'],
-      default: 'system'
-    },
-    language: {
-      type: String,
-      default: 'en'
-    }
-  },
-  subscription: {
-    type: {
-      type: String,
-      enum: ['free', 'premium'],
-      default: 'free'
-    },
-    expiresAt: Date
-  },
-  lastLoginAt: Date,
   createdAt: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
   updatedAt: {
     type: Date,
-    default: Date.now
-  }
-}, {
-  timestamps: true
-});
+    default: Date.now,
+  },
+})
 
-// Indexes
-// Note: email index is automatically created by unique: true
-UserSchema.index({ emailVerificationToken: 1 });
-UserSchema.index({ passwordResetToken: 1 });
-UserSchema.index({ createdAt: -1 });
+UserSchema.pre('save', function() {
+  this.updatedAt = new Date()
+})
 
-export default mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
+export const User = mongoose.models.User || mongoose.model('User', UserSchema)

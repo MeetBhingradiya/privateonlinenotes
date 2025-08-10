@@ -1,185 +1,128 @@
-import { GlassCard } from '@/components/ui/glass-card';
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ArrowLeft } from 'lucide-react'
 
-export default function TermsOfServicePage() {
+export default function TermsPage() {
   return (
-    <div className="container mx-auto px-4 py-16">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4">Terms of Service</h1>
-          <p className="text-white/70">
-            Last updated: {new Date().toLocaleDateString()}
-          </p>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-6">
+            <Link href="/auth/register">
+              <Button variant="ghost" className="mb-4">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Registration
+              </Button>
+            </Link>
+            <h1 className="text-3xl font-bold">Terms and Conditions</h1>
+            <p className="text-muted-foreground">Last updated: {new Date().toLocaleDateString()}</p>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Welcome to Notta.in</CardTitle>
+            </CardHeader>
+            <CardContent className="prose dark:prose-invert max-w-none">
+              <p>
+                These Terms and Conditions (&quot;Terms&quot;) govern your use of the Notta.in platform 
+                (&quot;Service&quot;) operated by Notta.in (&quot;us&quot;, &quot;we&quot;, or &quot;our&quot;).
+              </p>
+
+              <h3>1. Acceptance of Terms</h3>
+              <p>
+                By accessing and using this service, you accept and agree to be bound by the 
+                terms and provision of this agreement.
+              </p>
+
+              <h3>2. Description of Service</h3>
+              <p>
+                Notta.in is a fast, secure, markdown and UI rich note sharing platform designed 
+                for students and professionals. Our service allows you to create, edit, store, 
+                and share text files and code snippets.
+              </p>
+
+              <h3>3. User Accounts</h3>
+              <ul>
+                <li>You must provide accurate and complete information when creating an account</li>
+                <li>You are responsible for maintaining the security of your account credentials</li>
+                <li>You must notify us immediately of any unauthorized use of your account</li>
+                <li>One person or legal entity may not maintain more than one account</li>
+              </ul>
+
+              <h3>4. Acceptable Use</h3>
+              <p>You agree not to:</p>
+              <ul>
+                <li>Upload malicious code, viruses, or harmful content</li>
+                <li>Share content that violates intellectual property rights</li>
+                <li>Use the service for illegal activities</li>
+                <li>Attempt to gain unauthorized access to our systems</li>
+                <li>Spam or send unsolicited communications through our platform</li>
+              </ul>
+
+              <h3>5. Content and Intellectual Property</h3>
+              <ul>
+                <li>You retain ownership of content you upload to our service</li>
+                <li>You grant us a license to store, process, and display your content as necessary to provide the service</li>
+                <li>You are responsible for ensuring you have the right to share any content you upload</li>
+              </ul>
+
+              <h3>6. Privacy and Data Protection</h3>
+              <p>
+                We take your privacy seriously. We collect and process your personal data in 
+                accordance with our Privacy Policy. By using our service, you consent to such 
+                processing and you warrant that all data provided by you is accurate.
+              </p>
+
+              <h3>7. File Storage and Sharing</h3>
+              <ul>
+                <li>Files are stored securely and backed up regularly</li>
+                <li>You can control sharing permissions for your files</li>
+                <li>We maintain version history for your files (last 5 versions)</li>
+                <li>Shared files can be accessed by anyone with the share link</li>
+              </ul>
+
+              <h3>8. Service Availability</h3>
+              <p>
+                While we strive to maintain high availability, we do not guarantee uninterrupted 
+                access to our service. We may temporarily suspend access for maintenance or 
+                updates.
+              </p>
+
+              <h3>9. Account Termination</h3>
+              <p>
+                You may delete your account at any time from your profile settings. We may 
+                terminate accounts that violate these terms. Upon termination, all your data 
+                will be permanently deleted.
+              </p>
+
+              <h3>10. Limitation of Liability</h3>
+              <p>
+                Our service is provided &quot;as is&quot; without warranties of any kind. We shall not be 
+                liable for any indirect, incidental, special, consequential, or punitive damages.
+              </p>
+
+              <h3>11. Changes to Terms</h3>
+              <p>
+                We reserve the right to modify these terms at any time. We will notify users of 
+                significant changes via email or platform notifications.
+              </p>
+
+              <h3>12. Contact Information</h3>
+              <p>
+                If you have any questions about these Terms and Conditions, please contact us 
+                through our support channels.
+              </p>
+
+              <h3>13. Governing Law</h3>
+              <p>
+                These terms shall be governed by and construed in accordance with the laws of 
+                the jurisdiction where our company is registered.
+              </p>
+            </CardContent>
+          </Card>
         </div>
-
-        <GlassCard className="p-8 space-y-8">
-          <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">1. Acceptance of Terms</h2>
-            <div className="text-white/80 space-y-4">
-              <p>
-                By accessing and using PrivateOnlineNotes (&quot;the Service&quot;), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
-              </p>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">2. Description of Service</h2>
-            <div className="text-white/80 space-y-4">
-              <p>
-                PrivateOnlineNotes is a platform for creating, sharing, and managing markdown documents with various privacy controls. The service includes:
-              </p>
-              <ul className="list-disc ml-6 space-y-2">
-                <li>Markdown document creation and editing</li>
-                <li>Three privacy levels: Public, Unlisted, and Private</li>
-                <li>User account management</li>
-                <li>Anonymous posting capabilities</li>
-                <li>File management and organization features</li>
-              </ul>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">3. User Accounts</h2>
-            <div className="text-white/80 space-y-4">
-              <p>
-                To access certain features of the Service, you may be required to create an account. You agree to:
-              </p>
-              <ul className="list-disc ml-6 space-y-2">
-                <li>Provide accurate and complete information</li>
-                <li>Maintain the security of your password</li>
-                <li>Accept responsibility for all activities under your account</li>
-                <li>Notify us immediately of any unauthorized use</li>
-              </ul>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">4. Content Guidelines</h2>
-            <div className="text-white/80 space-y-4">
-              <p>
-                You are responsible for the content you post. You agree not to post content that:
-              </p>
-              <ul className="list-disc ml-6 space-y-2">
-                <li>Is illegal, harmful, or violates any laws</li>
-                <li>Infringes on intellectual property rights</li>
-                <li>Contains malware or malicious code</li>
-                <li>Is spam or unwanted promotional material</li>
-                <li>Harasses or threatens other users</li>
-                <li>Contains explicit or inappropriate material</li>
-              </ul>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">5. Privacy and Data</h2>
-            <div className="text-white/80 space-y-4">
-              <p>
-                Your privacy is important to us. Please review our Privacy Policy, which also governs your use of the Service, to understand our practices.
-              </p>
-              <p>
-                Content Privacy Levels:
-              </p>
-              <ul className="list-disc ml-6 space-y-2">
-                <li><strong>Public:</strong> Visible to everyone and may appear in search results</li>
-                <li><strong>Unlisted:</strong> Only accessible via direct link</li>
-                <li><strong>Private:</strong> Only visible to you when authenticated</li>
-              </ul>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">6. Intellectual Property</h2>
-            <div className="text-white/80 space-y-4">
-              <p>
-                You retain ownership of content you create. By posting content, you grant us a non-exclusive license to use, modify, and display your content for the purpose of providing the Service.
-              </p>
-              <p>
-                The Service itself, including its design, features, and underlying technology, is owned by us and protected by intellectual property laws.
-              </p>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibent text-white mb-4">7. Prohibited Uses</h2>
-            <div className="text-white/80 space-y-4">
-              <p>
-                You may not use the Service:
-              </p>
-              <ul className="list-disc ml-6 space-y-2">
-                <li>For any unlawful purpose or in violation of these Terms</li>
-                <li>To transmit harmful or malicious software</li>
-                <li>To interfere with or disrupt the Service</li>
-                <li>To attempt unauthorized access to our systems</li>
-                <li>To impersonate another person or entity</li>
-                <li>To collect user information without consent</li>
-              </ul>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">8. Service Availability</h2>
-            <div className="text-white/80 space-y-4">
-              <p>
-                We strive to keep the Service available 24/7, but we cannot guarantee uninterrupted access. We may suspend or discontinue the Service at any time for maintenance, updates, or other reasons.
-              </p>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">9. Termination</h2>
-            <div className="text-white/80 space-y-4">
-              <p>
-                We may terminate or suspend your account and access to the Service immediately, without prior notice, for conduct that we believe violates these Terms or is harmful to other users or the Service.
-              </p>
-              <p>
-                You may terminate your account at any time by contacting us or using the account deletion feature.
-              </p>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">10. Disclaimers and Limitations</h2>
-            <div className="text-white/80 space-y-4">
-              <p>
-                The Service is provided &quot;as is&quot; without warranties of any kind. We disclaim all warranties, express or implied, including but not limited to warranties of merchantability and fitness for a particular purpose.
-              </p>
-              <p>
-                We shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the Service.
-              </p>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">11. Advertising</h2>
-            <div className="text-white/80 space-y-4">
-              <p>
-                The Service may display advertisements provided by third parties, including Google AdSense. We are not responsible for the content of these advertisements or the practices of advertisers.
-              </p>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">12. Changes to Terms</h2>
-            <div className="text-white/80 space-y-4">
-              <p>
-                We reserve the right to modify these Terms at any time. We will notify users of significant changes via email or through the Service. Continued use of the Service after changes constitutes acceptance of the new Terms.
-              </p>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">13. Contact Information</h2>
-            <div className="text-white/80 space-y-4">
-              <p>
-                If you have any questions about these Terms of Service, please contact us at:
-              </p>
-              <p>
-                Email: legal@privateonlinenotes.com<br />
-                Address: [Your Company Address]
-              </p>
-            </div>
-          </section>
-        </GlassCard>
       </div>
     </div>
-  );
+  )
 }

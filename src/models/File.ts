@@ -1,141 +1,105 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose from 'mongoose'
 
-export enum FilePermission {
-  PUBLIC = 'public',
-  UNLISTED = 'unlisted',
-  PRIVATE = 'private'
-}
-
-export interface IFile extends Document {
-  title: string;
-  slug: string;
-  description?: string;
-  permission: FilePermission;
-  author?: mongoose.Types.ObjectId;
-  isAnonymous: boolean;
-  anonymousAuthor?: {
-    name: string;
-    sessionId: string;
-  };
-  isPinned: boolean;
-  tags: string[];
-  language: string;
-  fileSize: number;
-  viewCount: number;
-  lastViewedAt?: Date;
-  expiresAt?: Date;
-  isDeleted: boolean;
-  deletedAt?: Date;
-  version: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-const FileSchema = new Schema<IFile>({
-  title: {
+const FileSchema = new mongoose.Schema({
+  name: {
     type: String,
     required: true,
-    trim: true,
-    maxlength: 200
   },
-  slug: {
+  content: {
     type: String,
+    default: '',
+  },
+  type: {
+    type: String,
+    enum: ['file', 'folder'],
     required: true,
-    unique: true,
-    lowercase: true,
-    trim: true,
-    match: /^[a-z0-9-]+$/
   },
-  description: {
-    type: String,
-    maxlength: 500,
-    trim: true
-  },
-  permission: {
-    type: String,
-    enum: Object.values(FilePermission),
-    default: FilePermission.PRIVATE
-  },
-  author: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: function(this: IFile): boolean {
-      return !this.isAnonymous;
-    }
-  },
-  isAnonymous: {
-    type: Boolean,
-    default: false
-  },
-  anonymousAuthor: {
-    name: String,
-    sessionId: String
-  },
-  isPinned: {
-    type: Boolean,
-    default: false
-  },
-  tags: [{
-    type: String,
-    trim: true,
-    lowercase: true
-  }],
   language: {
     type: String,
-    default: 'markdown'
+    default: 'plaintext',
   },
-  fileSize: {
+  size: {
     type: Number,
-    default: 0
+    default: 0,
   },
-  viewCount: {
-    type: Number,
-    default: 0
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: false,
   },
-  lastViewedAt: Date,
-  expiresAt: Date, // For anonymous files
-  isDeleted: {
+  parent: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'File',
+    default: null,
+  },
+  path: {
+    type: String,
+    required: true,
+  },
+  isPublic: {
     type: Boolean,
-    default: false
+    default: false,
   },
-  deletedAt: Date,
-  version: {
+  shareCode: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
+  expiresAt: {
+    type: Date,
+    sparse: true,
+  },
+  accessCount: {
     type: Number,
-    default: 1
+    default: 0,
   },
+  reportCount: {
+    type: Number,
+    default: 0,
+  },
+  isBlocked: {
+    type: Boolean,
+    default: false,
+  },
+  permissions: [{
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    role: {
+      type: String,
+      enum: ['read', 'write', 'admin'],
+      default: 'read',
+    },
+  }],
+  versions: [{
+    content: String,
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+  }],
+  tags: [String],
   createdAt: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
   updatedAt: {
     type: Date,
-    default: Date.now
-  }
-}, {
-  timestamps: true
-});
+    default: Date.now,
+  },
+})
 
-// Indexes
-// Note: slug index is automatically created by unique: true
-FileSchema.index({ author: 1, createdAt: -1 });
-FileSchema.index({ permission: 1 });
-FileSchema.index({ isDeleted: 1 });
-FileSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
-FileSchema.index({ tags: 1 });
-FileSchema.index({ createdAt: -1 });
-FileSchema.index({ viewCount: -1 });
+FileSchema.pre('save', function() {
+  this.updatedAt = new Date()
+  this.size = this.content ? Buffer.byteLength(this.content, 'utf8') : 0
+})
 
-// Pre-save middleware to generate slug if not provided
-FileSchema.pre('save', function(this: IFile, next: mongoose.CallbackWithoutResultAndOptionalError) {
-  if (!this.slug && this.title) {
-    this.slug = this.title
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-+|-+$/g, ''); // Remove leading and trailing hyphens
-  }
-  next();
-});
+FileSchema.index({ owner: 1, path: 1 }, { unique: true })
+FileSchema.index({ 'permissions.user': 1 })
 
-export default mongoose.models.File || mongoose.model<IFile>('File', FileSchema);
+export const File = mongoose.models.File || mongoose.model('File', FileSchema)
