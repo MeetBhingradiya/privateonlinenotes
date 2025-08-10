@@ -3,10 +3,9 @@
 import { useState } from 'react'
 import { useAuth } from '@/components/providers/auth-provider'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
+import { IconButton, Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, Save, Trash2 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -141,10 +140,14 @@ export default function ProfilePage() {
         <div className="max-w-2xl mx-auto">
           <div className="mb-6">
             <Link href="/dashboard">
-              <Button variant="ghost" className="mb-4">
-                <ArrowLeft className="h-4 w-4 mr-2" />
+              <IconButton 
+                variant="ghost" 
+                className="mb-4"
+                icon="arrow-back"
+                tooltip="Return to dashboard"
+              >
                 Back to Dashboard
-              </Button>
+              </IconButton>
             </Link>
             <h1 className="text-3xl font-bold">Profile Settings</h1>
             <p className="text-muted-foreground">Manage your account settings and preferences</p>
@@ -190,10 +193,14 @@ export default function ProfilePage() {
                     )}
                   </div>
 
-                  <Button type="submit" disabled={loading}>
-                    <Save className="h-4 w-4 mr-2" />
+                  <IconButton 
+                    type="submit" 
+                    disabled={loading}
+                    icon="save"
+                    tooltip="Save profile changes"
+                  >
                     {loading ? 'Saving...' : 'Save Changes'}
-                  </Button>
+                  </IconButton>
                 </form>
               </CardContent>
             </Card>
@@ -253,10 +260,14 @@ export default function ProfilePage() {
                     )}
                   </div>
 
-                  <Button type="submit" disabled={passwordLoading}>
-                    <Save className="h-4 w-4 mr-2" />
+                  <IconButton 
+                    type="submit" 
+                    disabled={passwordLoading}
+                    icon="save"
+                    tooltip="Update your password"
+                  >
                     {passwordLoading ? 'Updating...' : 'Update Password'}
-                  </Button>
+                  </IconButton>
                 </form>
               </CardContent>
             </Card>
@@ -295,14 +306,15 @@ export default function ProfilePage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button 
+                <IconButton 
                   variant="destructive" 
                   onClick={handleDeleteAccount}
                   className="w-full sm:w-auto"
+                  icon="delete-forever"
+                  tooltip="Permanently delete your account and all data"
                 >
-                  <Trash2 className="h-4 w-4 mr-2" />
                   Delete Account
-                </Button>
+                </IconButton>
                 <p className="text-sm text-muted-foreground mt-2">
                   This action cannot be undone. All your files and data will be permanently deleted.
                 </p>

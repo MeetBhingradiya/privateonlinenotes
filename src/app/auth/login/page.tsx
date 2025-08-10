@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import toast from 'react-hot-toast'
-import { Button } from '@/components/ui/button'
+import { IconButton } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -47,17 +47,17 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-blue-900 dark:to-purple-900 p-4">
             <div className="absolute top-4 right-4">
                 <ThemeToggle />
             </div>
 
-            <Card className="w-full max-w-md">
+            <Card className="glass-card w-full max-w-md bg-white/20 dark:bg-white/10 border-white/30 dark:border-white/20 backdrop-blur-xl shadow-2xl">
                 <CardHeader className="text-center">
-                    <CardTitle className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                    <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                         Notta.in
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-foreground/70">
                         Sign in to your account to continue
                     </CardDescription>
                 </CardHeader>
@@ -88,21 +88,23 @@ export default function LoginPage() {
                             )}
                         </div>
 
-                        <Button
+                        <IconButton
                             type="submit"
                             className="w-full"
                             disabled={loading}
+                            icon="login"
+                            tooltip="Sign in to your account"
                         >
                             {loading ? 'Signing in...' : 'Sign In'}
-                        </Button>
+                        </IconButton>
                     </form>
 
                     <div className="mt-6 text-center">
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <p className="text-sm text-foreground/60">
                             Don&apos;t have an account?{' '}
                             <Link
                                 href="/auth/register"
-                                className="text-blue-600 hover:text-blue-500 dark:text-blue-400 font-medium"
+                                className="text-blue-600 hover:text-blue-500 dark:text-blue-400 font-medium transition-colors"
                             >
                                 Sign up
                             </Link>

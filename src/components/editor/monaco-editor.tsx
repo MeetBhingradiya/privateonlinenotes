@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Editor } from '@monaco-editor/react'
 import { Button } from '@/components/ui/button'
 import { Save, Download, Share, History } from 'lucide-react'
+import { Icon } from '@iconify/react'
 import { useTheme } from 'next-themes'
 import toast from 'react-hot-toast'
 
@@ -19,10 +20,11 @@ interface FileItem {
 interface MonacoEditorProps {
   file: FileItem
   onSave: (content: string) => void
+  onChange?: (content: string) => void
   readOnly?: boolean
 }
 
-export function MonacoEditor({ file, onSave, readOnly = false }: MonacoEditorProps) {
+export function MonacoEditor({ file, onSave, onChange, readOnly = false }: MonacoEditorProps) {
   const { theme } = useTheme()
   const [content, setContent] = useState(file.content || '')
   const [hasChanges, setHasChanges] = useState(false)
@@ -32,6 +34,34 @@ export function MonacoEditor({ file, onSave, readOnly = false }: MonacoEditorPro
     setContent(file.content || '')
     setHasChanges(false)
   }, [file])
+
+  const handleSave = useCallback(async () => {
+    setSaving(true)
+    try {
+      await onSave(content)
+      setHasChanges(false)
+    } catch {
+      toast.error('Failed to save file')
+    } finally {
+      setSaving(false)
+    }
+  }, [onSave, content])
+
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+S to save
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault()
+        if (hasChanges) {
+          handleSave()
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [hasChanges, handleSave])
 
   const getLanguage = (filename: string): string => {
     const ext = filename.split('.').pop()?.toLowerCase()
@@ -65,18 +95,6 @@ export function MonacoEditor({ file, onSave, readOnly = false }: MonacoEditorPro
       dart: 'dart',
     }
     return languageMap[ext || ''] || 'plaintext'
-  }
-
-  const handleSave = async () => {
-    setSaving(true)
-    try {
-      await onSave(content)
-      setHasChanges(false)
-    } catch {
-      toast.error('Failed to save file')
-    } finally {
-      setSaving(false)
-    }
   }
 
   const handleDownload = () => {
@@ -117,9 +135,15 @@ export function MonacoEditor({ file, onSave, readOnly = false }: MonacoEditorPro
         <div className="flex items-center space-x-2">
           <h2 className="font-semibold text-lg">{file.name}</h2>
           {hasChanges && (
-            <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full dark:bg-orange-900 dark:text-orange-200">
-              Unsaved changes
-            </span>
+            <div className="flex items-center space-x-2">
+              <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full dark:bg-orange-900 dark:text-orange-200 font-medium">
+                <Icon icon="material-symbols:edit" className="inline h-3 w-3 mr-1" />
+                Unsaved changes
+              </span>
+              <span className="text-xs text-muted-foreground px-2 py-1 bg-muted rounded-md">
+                Press <kbd className="px-1 py-0.5 bg-background rounded text-xs font-mono">Ctrl+S</kbd> to save
+              </span>
+            </div>
           )}
         </div>
         <div className="flex items-center space-x-2">
@@ -170,6 +194,7 @@ export function MonacoEditor({ file, onSave, readOnly = false }: MonacoEditorPro
             if (!readOnly) {
               setContent(value || '')
               setHasChanges(value !== file.content)
+              onChange?.(value || '')
             }
           }}
           theme={theme === 'dark' ? 'vs-dark' : 'light'}

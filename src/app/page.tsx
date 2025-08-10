@@ -1,40 +1,53 @@
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { ArrowRight, FileText, Share, Shield, Code, Globe, Sparkles, Check } from 'lucide-react'
+import { IconButton, Button } from '@/components/ui/button'
+import { Icon } from '@iconify/react'
 import { ThemeToggle } from '@/components/theme-toggle'
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
+      <nav className="glass-nav sticky top-4 z-50 mx-4 bg-white/10 dark:bg-white/5 border-white/20 dark:border-white/10">
+        <div className="container flex h-16 items-center justify-between px-6">
           <div className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-              <FileText className="h-4 w-4 text-white" />
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
+              <Icon icon="material-symbols:description" className="h-4 w-4 text-white" />
             </div>
-            <span className="text-xl font-bold">Notta.in</span>
+            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Notta.in</span>
           </div>
           
           <div className="flex items-center space-x-4">
             <div className="hidden md:flex items-center space-x-6">
-              <Link href="/explore" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              <Link href="/explore" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors backdrop-blur-sm">
                 Explore
               </Link>
-              <Link href="/pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              <Link href="/pricing" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors backdrop-blur-sm">
                 Pricing
               </Link>
-              <Link href="/contact" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              <Link href="/contact" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors backdrop-blur-sm">
                 Contact
               </Link>
             </div>
             <div className="flex items-center space-x-2">
               <ThemeToggle />
               <Link href="/auth/login">
-                <Button variant="ghost" size="sm">Sign In</Button>
+                <IconButton 
+                  variant="ghost" 
+                  size="sm" 
+                  icon="login" 
+                  tooltip="Sign in to your account"
+                >
+                  Sign In
+                </IconButton>
               </Link>
               <Link href="/auth/register">
-                <Button size="sm">Get Started</Button>
+                <IconButton 
+                  size="sm" 
+                  icon="person-add" 
+                  tooltip="Create a new account"
+                >
+                  Get Started
+                </IconButton>
               </Link>
             </div>
           </div>
@@ -45,9 +58,9 @@ export default function HomePage() {
       <section className="py-20 px-4">
         <div className="container max-w-6xl mx-auto">
           <div className="text-center space-y-8">
-            <div className="inline-flex items-center rounded-full border px-4 py-2 text-sm bg-muted">
-              <Sparkles className="mr-2 h-4 w-4" />
-              Fast, secure, and beautiful note sharing
+            <div className="inline-flex items-center rounded-full glass border-white/30 px-6 py-3 text-sm bg-white/20 dark:bg-white/10 backdrop-blur-md">
+              <Icon icon="material-symbols:auto-awesome" className="mr-2 h-4 w-4 text-blue-600" />
+              <span className="font-medium">Fast, secure, and beautiful note sharing</span>
             </div>
             
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight">
@@ -57,22 +70,32 @@ export default function HomePage() {
               </span>
             </h1>
             
-            <p className="max-w-2xl mx-auto text-xl text-muted-foreground leading-relaxed">
+            <p className="max-w-2xl mx-auto text-xl text-foreground/70 leading-relaxed">
               Create, edit, and share your notes and code snippets with the world. 
               Perfect for developers, students, and teams who value simplicity.
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/auth/register">
-                <Button size="lg" className="w-full sm:w-auto">
+                <IconButton 
+                  size="lg" 
+                  className="w-full sm:w-auto" 
+                  icon="rocket-launch" 
+                  tooltip="Start creating and sharing notes for free"
+                >
                   Start for free
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+                </IconButton>
               </Link>
               <Link href="/anonymous">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto">
+                <IconButton 
+                  size="lg" 
+                  variant="outline" 
+                  className="w-full sm:w-auto" 
+                  icon="visibility" 
+                  tooltip="Try our platform without creating an account"
+                >
                   Try without signup
-                </Button>
+                </IconButton>
               </Link>
             </div>
           </div>
@@ -80,13 +103,13 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-4 bg-muted/50">
+      <section className="py-20 px-4">
         <div className="container max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Everything you need to share
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-xl text-foreground/70 max-w-2xl mx-auto">
               Built with modern web technologies for the best experience
             </p>
           </div>
@@ -94,40 +117,40 @@ export default function HomePage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
-                icon: Code,
+                icon: "material-symbols:code",
                 title: "Monaco Editor",
                 description: "Professional code editor with syntax highlighting for 100+ languages"
               },
               {
-                icon: Share,
+                icon: "material-symbols:share",
                 title: "Instant Sharing",
                 description: "Generate secure shareable links in seconds with custom expiry options"
               },
               {
-                icon: Shield,
+                icon: "material-symbols:shield",
                 title: "Privacy First",
                 description: "Your data is encrypted and secure. Anonymous sharing available"
               },
               {
-                icon: Globe,
+                icon: "material-symbols:public",
                 title: "No Account Required",
                 description: "Create and share notes instantly without any registration"
               },
               {
-                icon: FileText,
+                icon: "material-symbols:description",
                 title: "Rich Formatting",
                 description: "Support for markdown, code blocks, and rich text formatting"
               },
               {
-                icon: Sparkles,
+                icon: "material-symbols:auto-awesome",
                 title: "Modern Interface",
                 description: "Clean, intuitive design that works on all your devices"
               }
             ].map((feature, index) => (
-              <div key={index} className="group p-6 rounded-lg border bg-background hover:shadow-md transition-all">
-                <feature.icon className="h-12 w-12 text-blue-600 mb-4 group-hover:scale-110 transition-transform" />
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
+              <div key={index} className="glass-card group p-8 bg-white/10 dark:bg-white/5 border-white/20 dark:border-white/10 hover:bg-white/20 dark:hover:bg-white/10 transition-all duration-300">
+                <Icon icon={feature.icon} className="h-12 w-12 text-blue-600 mb-6 group-hover:scale-110 transition-transform drop-shadow-lg" />
+                <h3 className="text-xl font-semibold mb-3 text-foreground">{feature.title}</h3>
+                <p className="text-foreground/70">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -138,18 +161,18 @@ export default function HomePage() {
       <section className="py-20 px-4">
         <div className="container max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Simple, transparent pricing
             </h2>
-            <p className="text-xl text-muted-foreground">
+            <p className="text-xl text-foreground/70">
               Start free, upgrade when you need more
             </p>
           </div>
           
           <div className="grid md:grid-cols-2 gap-8">
-            <div className="p-8 rounded-lg border bg-background">
+            <div className="glass-card p-8 bg-white/10 dark:bg-white/5 border-white/20 dark:border-white/10">
               <h3 className="text-2xl font-bold mb-2">Free</h3>
-              <p className="text-muted-foreground mb-6">Perfect for personal use</p>
+              <p className="text-foreground/70 mb-6">Perfect for personal use</p>
               <ul className="space-y-3 mb-8">
                 {[
                   "Unlimited public notes",
@@ -158,24 +181,30 @@ export default function HomePage() {
                   "7-day link expiry"
                 ].map((feature, index) => (
                   <li key={index} className="flex items-center">
-                    <Check className="h-4 w-4 text-green-600 mr-3" />
+                    <Icon icon="material-symbols:check-circle" className="h-4 w-4 text-green-600 mr-3" />
                     <span>{feature}</span>
                   </li>
                 ))}
               </ul>
               <Link href="/auth/register">
-                <Button className="w-full">Get Started Free</Button>
+                <IconButton 
+                  className="w-full" 
+                  icon="rocket-launch" 
+                  tooltip="Start using our platform for free"
+                >
+                  Get Started Free
+                </IconButton>
               </Link>
             </div>
             
-            <div className="p-8 rounded-lg border bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 relative">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+            <div className="glass-card p-8 bg-gradient-to-br from-blue-500/20 to-purple-500/20 dark:from-blue-500/10 dark:to-purple-500/10 border-white/30 dark:border-white/20 relative backdrop-blur-lg">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg backdrop-blur-sm">
                   Popular
                 </span>
               </div>
               <h3 className="text-2xl font-bold mb-2">Pro</h3>
-              <p className="text-muted-foreground mb-6">For professionals and teams</p>
+              <p className="text-foreground/70 mb-6">For professionals and teams</p>
               <ul className="space-y-3 mb-8">
                 {[
                   "Everything in Free",
@@ -185,13 +214,19 @@ export default function HomePage() {
                   "Priority support"
                 ].map((feature, index) => (
                   <li key={index} className="flex items-center">
-                    <Check className="h-4 w-4 text-green-600 mr-3" />
+                    <Icon icon="material-symbols:check-circle" className="h-4 w-4 text-green-600 mr-3" />
                     <span>{feature}</span>
                   </li>
                 ))}
               </ul>
               <Link href="/pricing">
-                <Button className="w-full">View Pricing</Button>
+                <IconButton 
+                  className="w-full" 
+                  icon="visibility" 
+                  tooltip="View detailed pricing information"
+                >
+                  View Pricing
+                </IconButton>
               </Link>
             </div>
           </div>
@@ -229,7 +264,7 @@ export default function HomePage() {
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
                 <div className="h-6 w-6 rounded bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-                  <FileText className="h-3 w-3 text-white" />
+                  <Icon icon="material-symbols:description" className="h-3 w-3 text-white" />
                 </div>
                 <span className="font-bold">Notta.in</span>
               </div>
