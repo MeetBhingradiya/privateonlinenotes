@@ -16,7 +16,7 @@ const UserSchema = new mongoose.Schema({
   },
   plan: {
     type: String,
-    enum: ['free', 'premium'],
+    enum: ['free', 'premium', 'enterprise'],
     default: 'free',
   },
   avatar: String,
@@ -49,3 +49,22 @@ UserSchema.pre('save', function() {
 })
 
 export const User = mongoose.models.User || mongoose.model('User', UserSchema)
+
+export interface IUser {
+  _id: string
+  name: string
+  email: string
+  password: string
+  plan: 'free' | 'premium' | 'enterprise'
+  avatar?: string
+  isBlocked: boolean
+  paymentHistory: Array<{
+    orderId: string
+    paymentId: string
+    planId: string
+    amount: number
+    createdAt: Date
+  }>
+  createdAt: Date
+  updatedAt: Date
+}
