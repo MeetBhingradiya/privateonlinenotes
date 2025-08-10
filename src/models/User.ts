@@ -5,6 +5,16 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true,
+    minlength: 3,
+    maxlength: 30,
+    match: /^[a-zA-Z0-9_]+$/,
+  },
   email: {
     type: String,
     required: true,
@@ -53,6 +63,7 @@ export const User = mongoose.models.User || mongoose.model('User', UserSchema)
 export interface IUser {
   _id: string
   name: string
+  username: string
   email: string
   password: string
   plan: 'free' | 'premium' | 'enterprise'

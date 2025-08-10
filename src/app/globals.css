@@ -79,7 +79,7 @@
   }
   
   .glass-card {
-    @apply glass rounded-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.02];
+    @apply glass rounded-xl transition-all duration-300 hover:shadow-2xl;
   }
   
   .glass-nav {
@@ -120,4 +120,17 @@
 .monaco-editor {
   --vscode-editor-background: hsl(var(--background));
   --vscode-editor-foreground: hsl(var(--foreground));
+}
+
+/* Disable any hover scaling effects on Monaco editor */
+.monaco-editor,
+.monaco-editor * {
+  transform: none !important;
+  transition: none !important;
+}
+
+.monaco-editor:hover,
+.monaco-editor *:hover {
+  transform: none !important;
+  scale: 1 !important;
 }

@@ -3,93 +3,93 @@ import jwt from 'jsonwebtoken'
 import { initializeModels } from '@/models'
 
 export async function GET(request: NextRequest) {
-  try {
-    const { File } = await initializeModels()
-    
-    const token = request.cookies.get('token')?.value
-    if (!token) {
-      return NextResponse.json({ message: 'Not authenticated' }, { status: 401 })
+    try {
+        const { File } = await initializeModels()
+
+        const token = request.cookies.get('token')?.value
+        if (!token) {
+            return NextResponse.json({ message: 'Not authenticated' }, { status: 401 })
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string }
+        const { searchParams } = new URL(request.url)
+        const path = searchParams.get('path') || '/'
+
+        let files
+        if (path === '/') {
+            // Root directory - get files that don't contain any additional slashes after the initial one
+            files = await File.find({
+                owner: decoded.userId,
+                $or: [
+                    { path: /^\/[^\/]+$/ }, // Matches /filename or /foldername (one level deep)
+                    { path: '/' } // In case someone stored files with just '/' path
+                ]
+            }).sort({ type: 1, name: 1 })
+        } else {
+            // Subdirectory - get files that start with the current path + one more level
+            const escapedPath = path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+            files = await File.find({
+                owner: decoded.userId,
+                path: new RegExp(`^${escapedPath}/[^/]+$`)
+            }).sort({ type: 1, name: 1 })
+        }
+
+        return NextResponse.json(files)
+    } catch (error) {
+        console.error('Files fetch error:', error)
+        return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
     }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string }
-    const { searchParams } = new URL(request.url)
-    const path = searchParams.get('path') || '/'
-
-    let files
-    if (path === '/') {
-      // Root directory - get files that don't contain any additional slashes after the initial one
-      files = await File.find({
-        owner: decoded.userId,
-        $or: [
-          { path: /^\/[^\/]+$/ }, // Matches /filename or /foldername (one level deep)
-          { path: '/' } // In case someone stored files with just '/' path
-        ]
-      }).sort({ type: 1, name: 1 })
-    } else {
-      // Subdirectory - get files that start with the current path + one more level
-      const escapedPath = path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-      files = await File.find({
-        owner: decoded.userId,
-        path: new RegExp(`^${escapedPath}/[^/]+$`)
-      }).sort({ type: 1, name: 1 })
-    }
-
-    return NextResponse.json(files)
-  } catch (error) {
-    console.error('Files fetch error:', error)
-    return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
-  }
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    const { File } = await initializeModels()
-    
-    const token = request.cookies.get('token')?.value
-    if (!token) {
-      return NextResponse.json({ message: 'Not authenticated' }, { status: 401 })
+    try {
+        const { File } = await initializeModels()
+
+        const token = request.cookies.get('token')?.value
+        if (!token) {
+            return NextResponse.json({ message: 'Not authenticated' }, { status: 401 })
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string }
+        const { name, type, currentPath, content = '' } = await request.json()
+
+        if (!name || !type) {
+            return NextResponse.json(
+                { message: 'Name and type are required' },
+                { status: 400 }
+            )
+        }
+
+        // Create the full path for the new item
+        const fullPath = currentPath === '/' ? `/${name}` : `${currentPath}/${name}`
+
+        // Check if file/folder already exists with the same path
+        const existing = await File.findOne({
+            owner: decoded.userId,
+            path: fullPath
+        })
+
+        if (existing) {
+            return NextResponse.json(
+                { message: 'A file or folder with this name already exists' },
+                { status: 409 }
+            )
+        }
+
+        const file = await File.create({
+            name,
+            type,
+            path: fullPath,
+            content,
+            owner: decoded.userId,
+            language: type === 'file' ? getLanguageFromName(name) : undefined,
+        })
+
+        return NextResponse.json(file)
+    } catch (error) {
+        console.error('File creation error:', error)
+        return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
     }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string }
-    const { name, type, currentPath, content = '' } = await request.json()
-
-    if (!name || !type) {
-      return NextResponse.json(
-        { message: 'Name and type are required' },
-        { status: 400 }
-      )
-    }
-
-    // Create the full path for the new item
-    const fullPath = currentPath === '/' ? `/${name}` : `${currentPath}/${name}`
-
-    // Check if file/folder already exists with the same path
-    const existing = await File.findOne({
-      owner: decoded.userId,
-      path: fullPath
-    })
-
-    if (existing) {
-      return NextResponse.json(
-        { message: 'A file or folder with this name already exists' },
-        { status: 409 }
-      )
-    }
-
-    const file = await File.create({
-      name,
-      type,
-      path: fullPath,
-      content,
-      owner: decoded.userId,
-      language: type === 'file' ? getLanguageFromName(name) : undefined,
-    })
-
-    return NextResponse.json(file)
-  } catch (error) {
-    console.error('File creation error:', error)
-    return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
-  }
 }
 
 function getLanguageFromName(filename: string): string {

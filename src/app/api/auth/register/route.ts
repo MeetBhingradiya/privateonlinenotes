@@ -7,11 +7,11 @@ export async function POST(request: NextRequest) {
   try {
     const { User } = await initializeModels()
     
-    const { name, email, password } = await request.json()
+    const { name, username, email, password } = await request.json()
 
-    if (!name || !email || !password) {
+    if (!name || !username || !email || !password) {
       return NextResponse.json(
-        { message: 'Name, email, and password are required' },
+        { message: 'Name, username, email, and password are required' },
         { status: 400 }
       )
     }
@@ -23,6 +23,31 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validate username format
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+      return NextResponse.json(
+        { message: 'Username can only contain letters, numbers, and underscores' },
+        { status: 400 }
+      )
+    }
+
+    if (username.length < 3 || username.length > 30) {
+      return NextResponse.json(
+        { message: 'Username must be between 3 and 30 characters' },
+        { status: 400 }
+      )
+    }
+
+    // Check for existing username
+    const existingUsername = await User.findOne({ username: username.toLowerCase() })
+    if (existingUsername) {
+      return NextResponse.json(
+        { message: 'Username is already taken' },
+        { status: 409 }
+      )
+    }
+
+    // Check for existing email
     const existingUser = await User.findOne({ email })
     if (existingUser) {
       return NextResponse.json(
@@ -35,6 +60,7 @@ export async function POST(request: NextRequest) {
 
     const user = await User.create({
       name,
+      username: username.toLowerCase(),
       email,
       password: hashedPassword,
     })
@@ -42,12 +68,13 @@ export async function POST(request: NextRequest) {
     const token = jwt.sign(
       { userId: user._id },
       process.env.JWT_SECRET!,
-      { expiresIn: '7d' }
+      { expiresIn: '1h' }
     )
 
     const response = NextResponse.json({
       id: user._id,
       email: user.email,
+      username: user.username,
       name: user.name,
       plan: user.plan,
       avatar: user.avatar,
@@ -57,7 +84,7 @@ export async function POST(request: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: 60 * 60, // 1 hour
     })
 
     return response

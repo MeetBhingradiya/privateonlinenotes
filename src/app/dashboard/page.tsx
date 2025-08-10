@@ -121,7 +121,7 @@ export default function DashboardPage() {
         window.addEventListener('beforeunload', handleBeforeUnload)
         window.addEventListener('keydown', handleKeyDown)
         window.addEventListener('popstate', handlePopstate)
-        
+
         return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload)
             window.removeEventListener('keydown', handleKeyDown)
@@ -396,7 +396,7 @@ export default function DashboardPage() {
                 }
             }
         }
-        
+
         await logout()
         router.push('/auth/login')
     }
@@ -750,7 +750,7 @@ export default function DashboardPage() {
                                     </span>
                                 ))}
                             </div>
-                            
+
                             {/* Unsaved changes warning in breadcrumb area */}
                             {hasUnsavedChanges && selectedFile && (
                                 <div className="mb-4 p-3 bg-amber-50/80 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-700/40 rounded-lg backdrop-blur-sm">
@@ -873,7 +873,7 @@ export default function DashboardPage() {
                                         </div>
                                         {viewMode === 'list' && (
                                             <div className="mt-2 text-xs text-foreground/50 ml-8">
-                                                {formatFileSize(file.size)} • {formatDate(file.updatedAt)}
+                                                {file.type === "file" ? formatFileSize(file.size) : null} {file.type === "file" ? "•" : null} {formatDate(file.updatedAt)}
                                             </div>
                                         )}
                                     </CardContent>
@@ -888,13 +888,6 @@ export default function DashboardPage() {
                 <div className="flex-1 bg-white/3 dark:bg-white/2 backdrop-blur-sm border-l border-white/10 dark:border-white/5 h-full overflow-hidden">
                     {selectedFile ? (
                         <div className="h-full glass-card rounded-none border-0 bg-white/5 dark:bg-white/3 backdrop-blur-lg relative">
-                            {/* Unsaved changes indicator */}
-                            {hasUnsavedChanges && (
-                                <div className="absolute top-4 right-4 z-10 bg-amber-500/90 text-amber-900 px-3 py-1 rounded-lg text-sm font-medium shadow-lg backdrop-blur-sm border border-amber-300/50">
-                                    <Icon icon="material-symbols:edit" className="inline h-4 w-4 mr-1" />
-                                    Unsaved changes
-                                </div>
-                            )}
                             <MonacoEditor
                                 file={selectedFile}
                                 onSave={saveFile}

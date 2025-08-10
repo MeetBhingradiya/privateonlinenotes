@@ -14,7 +14,7 @@ import { ThemeToggle } from '@/components/theme-toggle'
 import { useAuth } from '@/components/providers/auth-provider'
 
 const loginSchema = z.object({
-    email: z.string().email('Please enter a valid email'),
+    username: z.string().min(1, 'Username is required'),
     password: z.string().min(1, 'Password is required'),
 })
 
@@ -36,7 +36,7 @@ export default function LoginPage() {
     const onSubmit = async (data: LoginFormData) => {
         setLoading(true)
         try {
-            await login(data.email, data.password)
+            await login(data.username, data.password)
             toast.success('Login successful!')
             router.push('/dashboard')
         } catch (error: any) {
@@ -66,13 +66,13 @@ export default function LoginPage() {
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                         <div>
                             <Input
-                                {...register('email')}
-                                type="email"
-                                placeholder="Email address"
-                                className={errors.email ? 'border-red-500' : ''}
+                                {...register('username')}
+                                type="text"
+                                placeholder="Username"
+                                className={errors.username ? 'border-red-500' : ''}
                             />
-                            {errors.email && (
-                                <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+                            {errors.username && (
+                                <p className="text-red-500 text-sm mt-1">{errors.username.message}</p>
                             )}
                         </div>
 
@@ -99,7 +99,15 @@ export default function LoginPage() {
                         </IconButton>
                     </form>
 
-                    <div className="mt-6 text-center">
+                    <div className="mt-6 text-center space-y-2">
+                        <p className="text-sm text-foreground/60">
+                            <Link
+                                href="/auth/recover-username"
+                                className="text-blue-600 hover:text-blue-500 dark:text-blue-400 font-medium transition-colors"
+                            >
+                                Forgot your username?
+                            </Link>
+                        </p>
                         <p className="text-sm text-foreground/60">
                             Don&apos;t have an account?{' '}
                             <Link
