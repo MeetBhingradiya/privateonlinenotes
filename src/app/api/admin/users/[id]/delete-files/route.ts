@@ -29,50 +29,38 @@ export async function DELETE(
       )
     }
 
-    await File.findByIdAndDelete(id)
-
-    return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Delete file error:', error)
-    return NextResponse.json(
-      { message: 'Internal server error' },
-      { status: 500 }
-    )
-  }
-}
-
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { User, File } = await initializeModels()
-    
-    const { id } = await params
-    
-    const token = request.cookies.get('token')?.value
-    if (!token) {
+    // Check if target user exists
+    const targetUser = await User.findById(id)
+    if (!targetUser) {
       return NextResponse.json(
-        { message: 'Not authenticated' },
-        { status: 401 }
+        { message: 'User not found' },
+        { status: 404 }
       )
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string }
-    const adminUser = await User.findById(decoded.userId)
-    
-    if (!adminUser || adminUser.email !== 'admin@notta.in') {
+    // Prevent admin from deleting their own files accidentally
+    if (targetUser.username === 'admin') {
       return NextResponse.json(
-        { message: 'Access denied' },
+        { message: 'Cannot delete admin user files' },
         { status: 403 }
       )
     }
 
-    await File.findByIdAndUpdate(id, { isBlocked: true })
+    // Delete all files belonging to this user
+    const deleteResult = await File.deleteMany({ owner: id })
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({
+      success: true,
+      deletedCount: deleteResult.deletedCount,
+      user: {
+        id: targetUser._id,
+        name: targetUser.name,
+        username: targetUser.username,
+        email: targetUser.email
+      }
+    })
   } catch (error) {
-    console.error('Block file error:', error)
+    console.error('Delete user files error:', error)
     return NextResponse.json(
       { message: 'Internal server error' },
       { status: 500 }

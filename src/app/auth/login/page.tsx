@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
@@ -23,7 +23,14 @@ type LoginFormData = z.infer<typeof loginSchema>
 export default function LoginPage() {
     const [loading, setLoading] = useState(false)
     const router = useRouter()
-    const { login } = useAuth()
+    const { login, user, loading: authLoading } = useAuth()
+
+    // Redirect if already authenticated
+    useEffect(() => {
+        if (!authLoading && user) {
+            router.push('/dashboard')
+        }
+    }, [user, authLoading, router])
 
     const {
         register,
@@ -44,6 +51,20 @@ export default function LoginPage() {
         } finally {
             setLoading(false)
         }
+    }
+
+    // Don't render the form if user is already authenticated or auth is still loading
+    if (authLoading || user) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-blue-900 dark:to-purple-900">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-foreground/70">
+                        {user ? 'Redirecting to dashboard...' : 'Loading...'}
+                    </p>
+                </div>
+            </div>
+        )
     }
 
     return (

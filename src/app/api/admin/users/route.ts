@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     const adminUser = await User.findById(decoded.userId)
     
     // Check if user is admin
-    if (!adminUser || adminUser.email !== 'admin@notta.in') {
+    if (!adminUser || adminUser.username !== 'admin') {
       return NextResponse.json(
         { message: 'Access denied' },
         { status: 403 }
@@ -38,6 +38,7 @@ export async function GET(request: NextRequest) {
       {
         $project: {
           name: 1,
+          username: 1,
           email: 1,
           plan: 1,
           createdAt: 1,

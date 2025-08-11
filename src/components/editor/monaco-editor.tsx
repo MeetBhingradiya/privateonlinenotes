@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Editor } from '@monaco-editor/react'
 import { Button } from '@/components/ui/button'
-import { Save, Download, Share, History } from 'lucide-react'
+import { Save, Download, Share } from 'lucide-react'
 import { Icon } from '@iconify/react'
 import { useTheme } from 'next-themes'
 import toast from 'react-hot-toast'

@@ -22,7 +22,7 @@ export async function POST(
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string }
     const adminUser = await User.findById(decoded.userId)
     
-    if (!adminUser || adminUser.email !== 'admin@notta.in') {
+    if (!adminUser || adminUser.username !== 'admin') {
       return NextResponse.json(
         { message: 'Access denied' },
         { status: 403 }

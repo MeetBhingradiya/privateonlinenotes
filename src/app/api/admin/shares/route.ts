@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string }
     const adminUser = await User.findById(decoded.userId)
     
-    if (!adminUser || adminUser.email !== 'admin@notta.in') {
+    if (!adminUser || adminUser.username !== 'admin') {
       return NextResponse.json(
         { message: 'Access denied' },
         { status: 403 }
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     }
 
     const shares = await File.find({ isPublic: true })
-      .populate('owner', 'name email')
+      .populate('owner', 'name username email')
       .sort({ createdAt: -1 })
       .limit(100)
 
@@ -40,6 +40,7 @@ export async function GET(request: NextRequest) {
       owner: file.owner ? {
         _id: file.owner._id.toString(),
         name: file.owner.name,
+        username: file.owner.username,
         email: file.owner.email
       } : null,
       expiresAt: file.expiresAt?.toISOString() || null

@@ -50,7 +50,7 @@ export default function RecoverUsernamePage() {
             } else {
                 toast.error(result.message || 'Recovery failed')
             }
-        } catch (error: any) {
+        } catch {
             toast.error('Recovery failed')
         } finally {
             setLoading(false)
