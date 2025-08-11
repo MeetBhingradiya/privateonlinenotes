@@ -19,7 +19,7 @@ const registerSchema = z.object({
     .min(3, 'Username must be at least 3 characters')
     .max(30, 'Username must be less than 30 characters')
     .regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores'),
-  email: z.string().email('Please enter a valid email'),
+  email: z.string().email('Please enter a valid email').optional().or(z.literal('')),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string(),
   terms: z.boolean().refine(val => val === true, 'You must accept the terms and conditions'),
@@ -53,7 +53,7 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterFormData) => {
     setLoading(true)
     try {
-      await registerUser(data.name, data.username, data.email, data.password)
+      await registerUser(data.name, data.username, data.email || '', data.password)
       toast.success('Account created successfully!')
       router.push('/dashboard')
     } catch (error: any) {
@@ -123,7 +123,7 @@ export default function RegisterPage() {
               <Input
                 {...register('email')}
                 type="email"
-                placeholder="Email address (for recovery)"
+                placeholder="Email address (optional - for account recovery)"
                 className={errors.email ? 'border-red-500' : ''}
               />
               {errors.email && (

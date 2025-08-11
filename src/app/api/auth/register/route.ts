@@ -9,9 +9,9 @@ export async function POST(request: NextRequest) {
     
     const { name, username, email, password } = await request.json()
 
-    if (!name || !username || !email || !password) {
+    if (!name || !username || !password) {
       return NextResponse.json(
-        { message: 'Name, username, email, and password are required' },
+        { message: 'Name, username, and password are required' },
         { status: 400 }
       )
     }
@@ -47,13 +47,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check for existing email
-    const existingUser = await User.findOne({ email })
-    if (existingUser) {
-      return NextResponse.json(
-        { message: 'User already exists with this email' },
-        { status: 409 }
-      )
+    // Check for existing email only if email is provided
+    if (email && email.trim() !== '') {
+      const existingUser = await User.findOne({ email })
+      if (existingUser) {
+        return NextResponse.json(
+          { message: 'User already exists with this email' },
+          { status: 409 }
+        )
+      }
     }
 
     const hashedPassword = await bcrypt.hash(password, 12)
@@ -61,7 +63,7 @@ export async function POST(request: NextRequest) {
     const user = await User.create({
       name,
       username: username.toLowerCase(),
-      email,
+      email: email && email.trim() !== '' ? email : undefined,
       password: hashedPassword,
     })
 

@@ -21,6 +21,7 @@ export function middleware(request: NextRequest) {
         pathname === '/pricing' ||
         pathname === '/contact' ||
         pathname === '/anonymous' ||
+        pathname === '/explore' ||
         pathname === '/sitemap.xml'
     ) {
         return NextResponse.next()
