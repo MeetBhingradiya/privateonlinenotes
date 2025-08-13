@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(shares.map(file => ({
       _id: file._id.toString(),
-      name: file.name,
+      fileName: file.name,
       shareCode: file.shareCode,
       accessCount: file.accessCount || 0,
       reportCount: file.reportCount || 0,

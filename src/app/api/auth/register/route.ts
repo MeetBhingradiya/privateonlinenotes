@@ -9,9 +9,9 @@ export async function POST(request: NextRequest) {
     
     const { name, username, email, password } = await request.json()
 
-    if (!name || !username || !password) {
+    if (!username || !password) {
       return NextResponse.json(
-        { message: 'Name, username, and password are required' },
+        { message: 'Username and password are required' },
         { status: 400 }
       )
     }
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 12)
 
     const user = await User.create({
-      name,
+      name: name && name.trim() !== '' ? name : undefined,
       username: username.toLowerCase(),
       email: email && email.trim() !== '' ? email : undefined,
       password: hashedPassword,

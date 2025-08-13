@@ -10,7 +10,7 @@ import toast from 'react-hot-toast'
 import { IconButton } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ThemeToggle } from '@/components/theme-toggle'
+import { PageLayout } from '@/components/page-layout'
 import { useAuth } from '@/components/providers/auth-provider'
 
 const loginSchema = z.object({
@@ -56,91 +56,99 @@ export default function LoginPage() {
     // Don't render the form if user is already authenticated or auth is still loading
     if (authLoading || user) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-blue-900 dark:to-purple-900">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-foreground/70">
-                        {user ? 'Redirecting to dashboard...' : 'Loading...'}
-                    </p>
+            <PageLayout showBackButton={true} backTo="/" title="Sign In" showFooter={false}>
+                <div className="flex items-center justify-center min-h-[60vh]">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                        <p className="text-foreground/70">
+                            {user ? 'Redirecting to dashboard...' : 'Loading...'}
+                        </p>
+                    </div>
                 </div>
-            </div>
+            </PageLayout>
         )
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-blue-900 dark:to-purple-900 p-4">
-            <div className="absolute top-4 right-4">
-                <ThemeToggle />
+        <PageLayout showBackButton={true} backTo="/" title="Sign In" showFooter={false}>
+            <div className="flex items-center justify-center min-h-[60vh] p-4">
+                <Card className="glass-card w-full max-w-md bg-white/20 dark:bg-white/10 border-white/30 dark:border-white/20 backdrop-blur-xl shadow-2xl">
+                    <CardHeader className="text-center">
+                        <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                            Welcome Back
+                        </CardTitle>
+                        <CardDescription className="text-foreground/70">
+                            Sign in to your account to continue
+                        </CardDescription>
+                    </CardHeader>
+
+                    <CardContent>
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                            <div>
+                                <Input
+                                    {...register('username')}
+                                    type="text"
+                                    placeholder="Username"
+                                    className={errors.username ? 'border-red-500' : ''}
+                                />
+                                {errors.username && (
+                                    <p className="text-red-500 text-sm mt-1">{errors.username.message}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <Input
+                                    {...register('password')}
+                                    type="password"
+                                    placeholder="Password"
+                                    className={errors.password ? 'border-red-500' : ''}
+                                />
+                                {errors.password && (
+                                    <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+                                )}
+                            </div>
+
+                            <IconButton
+                                type="submit"
+                                className="w-full"
+                                disabled={loading}
+                                icon="login"
+                                tooltip="Sign in to your account"
+                            >
+                                {loading ? 'Signing in...' : 'Sign In'}
+                            </IconButton>
+                        </form>
+
+                        <div className="mt-6 text-center space-y-2">
+                            <p className="text-sm text-foreground/60">
+                                <Link
+                                    href="/auth/forgot-password"
+                                    className="text-blue-600 hover:text-blue-500 dark:text-blue-400 font-medium transition-colors"
+                                >
+                                    Forgot your password?
+                                </Link>
+                            </p>
+                            <p className="text-sm text-foreground/60">
+                                <Link
+                                    href="/auth/recover-username"
+                                    className="text-blue-600 hover:text-blue-500 dark:text-blue-400 font-medium transition-colors"
+                                >
+                                    Forgot your username?
+                                </Link>
+                            </p>
+                            <p className="text-sm text-foreground/60">
+                                Don&apos;t have an account?{' '}
+                                <Link
+                                    href="/auth/register"
+                                    className="text-blue-600 hover:text-blue-500 dark:text-blue-400 font-medium transition-colors"
+                                >
+                                    Sign up
+                                </Link>
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
-
-            <Card className="glass-card w-full max-w-md bg-white/20 dark:bg-white/10 border-white/30 dark:border-white/20 backdrop-blur-xl shadow-2xl">
-                <CardHeader className="text-center">
-                    <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                        Notta.in
-                    </CardTitle>
-                    <CardDescription className="text-foreground/70">
-                        Sign in to your account to continue
-                    </CardDescription>
-                </CardHeader>
-
-                <CardContent>
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                        <div>
-                            <Input
-                                {...register('username')}
-                                type="text"
-                                placeholder="Username"
-                                className={errors.username ? 'border-red-500' : ''}
-                            />
-                            {errors.username && (
-                                <p className="text-red-500 text-sm mt-1">{errors.username.message}</p>
-                            )}
-                        </div>
-
-                        <div>
-                            <Input
-                                {...register('password')}
-                                type="password"
-                                placeholder="Password"
-                                className={errors.password ? 'border-red-500' : ''}
-                            />
-                            {errors.password && (
-                                <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
-                            )}
-                        </div>
-
-                        <IconButton
-                            type="submit"
-                            className="w-full"
-                            disabled={loading}
-                            icon="login"
-                            tooltip="Sign in to your account"
-                        >
-                            {loading ? 'Signing in...' : 'Sign In'}
-                        </IconButton>
-                    </form>
-
-                    <div className="mt-6 text-center space-y-2">
-                        <p className="text-sm text-foreground/60">
-                            <Link
-                                href="/auth/recover-username"
-                                className="text-blue-600 hover:text-blue-500 dark:text-blue-400 font-medium transition-colors"
-                            >
-                                Forgot your username?
-                            </Link>
-                        </p>
-                        <p className="text-sm text-foreground/60">
-                            Don&apos;t have an account?{' '}
-                            <Link
-                                href="/auth/register"
-                                className="text-blue-600 hover:text-blue-500 dark:text-blue-400 font-medium transition-colors"
-                            >
-                                Sign up
-                            </Link>
-                        </p>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
+        </PageLayout>
     )
 }

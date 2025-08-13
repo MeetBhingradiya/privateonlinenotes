@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { initializeModels } from '@/models'
+import { emailService } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
     try {
@@ -22,15 +23,23 @@ export async function POST(request: NextRequest) {
             })
         }
 
-        // In a real application, you would send an email here
-        // For now, we'll just return the username in the response
-        // TODO: Implement email sending service
-        console.log(`Username recovery for ${email}: ${user.username}`)
+        // Send username recovery email
+        const emailResult = await emailService.sendUsernameRecoveryEmail(email, user.username)
+
+        if (!emailResult.success) {
+            console.error('Failed to send username recovery email:', emailResult.error)
+            // In production, you might want to still return success to not reveal if email exists
+            // For now, we'll return an error to help with debugging
+            return NextResponse.json(
+                { message: 'Failed to send recovery email. Please try again later.' },
+                { status: 500 }
+            )
+        }
 
         return NextResponse.json({
             message: 'If an account with this email exists, the username has been sent to your email.',
-            // In production, remove this line and send via email instead
-            username: user.username
+            // For development only - remove in production
+            username: process.env.NODE_ENV === 'development' ? user.username : undefined
         })
     } catch (error) {
         console.error('Username recovery error:', error)

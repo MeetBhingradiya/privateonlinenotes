@@ -9,7 +9,8 @@ import toast from 'react-hot-toast'
 import { IconButton } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ThemeToggle } from '@/components/theme-toggle'
+import { PageLayout } from '@/components/page-layout'
+import { ArrowLeft } from 'lucide-react'
 
 const recoverSchema = z.object({
     email: z.string().email('Please enter a valid email'),
@@ -58,20 +59,30 @@ export default function RecoverUsernamePage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-blue-900 dark:to-purple-900 p-4">
-            <div className="absolute top-4 right-4">
-                <ThemeToggle />
-            </div>
-
-            <Card className="glass-card w-full max-w-md bg-white/20 dark:bg-white/10 border-white/30 dark:border-white/20 backdrop-blur-xl shadow-2xl">
-                <CardHeader className="text-center">
-                    <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                        Recover Username
-                    </CardTitle>
-                    <CardDescription className="text-foreground/70">
-                        Enter your email to recover your username
-                    </CardDescription>
-                </CardHeader>
+        <PageLayout>
+            <div className="min-h-screen flex items-center justify-center px-4">
+                <Card className="w-full max-w-md">
+                    <CardHeader className="space-y-1">
+                        <div className="flex items-center space-x-2 mb-4">
+                            <Link href="/auth/login">
+                                <IconButton
+                                    variant="ghost"
+                                    size="sm"
+                                    icon="back"
+                                    tooltip="Back to login"
+                                >
+                                    <ArrowLeft className="h-4 w-4" />
+                                </IconButton>
+                            </Link>
+                            <span className="text-sm text-muted-foreground">Back to login</span>
+                        </div>
+                        <CardTitle className="text-2xl font-bold text-center">
+                            Recover Username
+                        </CardTitle>
+                        <CardDescription className="text-center text-foreground/70">
+                            Enter your email to recover your username
+                        </CardDescription>
+                    </CardHeader>
 
                 <CardContent>
                     {!recovered ? (
@@ -92,7 +103,7 @@ export default function RecoverUsernamePage() {
                                 type="submit"
                                 className="w-full"
                                 disabled={loading}
-                                icon="email"
+                                icon="mail"
                                 tooltip="Send username recovery email"
                             >
                                 {loading ? 'Sending...' : 'Recover Username'}
@@ -131,5 +142,6 @@ export default function RecoverUsernamePage() {
                 </CardContent>
             </Card>
         </div>
+        </PageLayout>
     )
 }

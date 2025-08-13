@@ -4,10 +4,10 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 
 interface User {
     id: string
-    email: string
+    email?: string
     username: string
-    name: string
-    plan: 'free' | 'premium' | 'enterprise'
+    name?: string
+    plan: 'free' | 'pro' | 'premium'
     avatar?: string
 }
 

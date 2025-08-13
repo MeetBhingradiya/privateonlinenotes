@@ -10,193 +10,180 @@ import toast from 'react-hot-toast'
 import { IconButton } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ThemeToggle } from '@/components/theme-toggle'
+import { PageLayout } from '@/components/page-layout'
 import { useAuth } from '@/components/providers/auth-provider'
 
 const registerSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  username: z.string()
-    .min(3, 'Username must be at least 3 characters')
-    .max(30, 'Username must be less than 30 characters')
-    .regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores'),
-  email: z.string().email('Please enter a valid email').optional().or(z.literal('')),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string(),
-  terms: z.boolean().refine(val => val === true, 'You must accept the terms and conditions'),
+    username: z.string()
+        .min(3, 'Username must be at least 3 characters')
+        .max(30, 'Username must be less than 30 characters')
+        .regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores'),
+    email: z.string().email('Please enter a valid email').optional().or(z.literal('')),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+    confirmPassword: z.string(),
+    terms: z.boolean().refine(val => val === true, 'You must accept the terms and conditions'),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
 })
 
 type RegisterFormData = z.infer<typeof registerSchema>
 
 export default function RegisterPage() {
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
-  const { register: registerUser, user, loading: authLoading } = useAuth()
-  
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (!authLoading && user) {
-      router.push('/dashboard')
-    }
-  }, [user, authLoading, router])
-  
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
-  })
+    const [loading, setLoading] = useState(false)
+    const router = useRouter()
+    const { register: registerUser, user, loading: authLoading } = useAuth()
 
-  const onSubmit = async (data: RegisterFormData) => {
-    setLoading(true)
-    try {
-      await registerUser(data.name, data.username, data.email || '', data.password)
-      toast.success('Account created successfully!')
-      router.push('/dashboard')
-    } catch (error: any) {
-      toast.error(error.message || 'Registration failed')
-    } finally {
-      setLoading(false)
+    // Redirect if already authenticated
+    useEffect(() => {
+        if (!authLoading && user) {
+            router.push('/dashboard')
+        }
+    }, [user, authLoading, router])
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm<RegisterFormData>({
+        resolver: zodResolver(registerSchema),
+    })
+
+    const onSubmit = async (data: RegisterFormData) => {
+        setLoading(true)
+        try {
+            await registerUser('', data.username, data.email || '', data.password)
+            toast.success('Account created successfully!')
+            router.push('/dashboard')
+        } catch (error: any) {
+            toast.error(error.message || 'Registration failed')
+        } finally {
+            setLoading(false)
+        }
     }
-  }
 
   // Don't render the form if user is already authenticated or auth is still loading
   if (authLoading || user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-blue-900 dark:to-purple-900">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-foreground/70">
-            {user ? 'Redirecting to dashboard...' : 'Loading...'}
-          </p>
+      <PageLayout showBackButton={true} backTo="/" title="Sign Up" showFooter={false}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-foreground/70">
+              {user ? 'Redirecting to dashboard...' : 'Loading...'}
+            </p>
+          </div>
         </div>
-      </div>
+      </PageLayout>
     )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-blue-900 dark:to-purple-900 p-4">
-      <div className="absolute top-4 right-4">
-        <ThemeToggle />
-      </div>
-      
-      <Card className="glass-card w-full max-w-md bg-white/20 dark:bg-white/10 border-white/30 dark:border-white/20 backdrop-blur-xl shadow-2xl">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Notta.in
-          </CardTitle>
-          <CardDescription className="text-foreground/70">
-            Create your account to get started
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div>
-              <Input
-                {...register('name')}
-                type="text"
-                placeholder="Full name"
-                className={errors.name ? 'border-red-500' : ''}
-              />
-              {errors.name && (
-                <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
-              )}
-            </div>
-            
-            <div>
-              <Input
-                {...register('username')}
-                type="text"
-                placeholder="Username"
-                className={errors.username ? 'border-red-500' : ''}
-              />
-              {errors.username && (
-                <p className="text-red-500 text-sm mt-1">{errors.username.message}</p>
-              )}
-            </div>
-            
-            <div>
-              <Input
-                {...register('email')}
-                type="email"
-                placeholder="Email address (optional - for account recovery)"
-                className={errors.email ? 'border-red-500' : ''}
-              />
-              {errors.email && (
-                <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
-              )}
-            </div>
-            
-            <div>
-              <Input
-                {...register('password')}
-                type="password"
-                placeholder="Password"
-                className={errors.password ? 'border-red-500' : ''}
-              />
-              {errors.password && (
-                <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
-              )}
-            </div>
-            
-            <div>
-              <Input
-                {...register('confirmPassword')}
-                type="password"
-                placeholder="Confirm password"
-                className={errors.confirmPassword ? 'border-red-500' : ''}
-              />
-              {errors.confirmPassword && (
-                <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message}</p>
-              )}
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <input
-                {...register('terms')}
-                type="checkbox"
-                id="terms"
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="terms" className="text-sm text-gray-600 dark:text-gray-400">
-                I agree to the{' '}
-                <Link href="/terms" className="text-blue-600 hover:text-blue-500 dark:text-blue-400">
-                  Terms and Conditions
-                </Link>
-              </label>
-            </div>
-            {errors.terms && (
-              <p className="text-red-500 text-sm">{errors.terms.message}</p>
-            )}
-            
-            <IconButton 
-              type="submit" 
-              className="w-full" 
-              disabled={loading}
-              icon="person-add"
-              tooltip="Create your new account"
-            >
-              {loading ? 'Creating Account...' : 'Create Account'}
-            </IconButton>
-          </form>
+    <PageLayout showBackButton={true} backTo="/" title="Sign Up" showFooter={false}>
+      <div className="flex items-center justify-center min-h-[60vh] p-4">
+        <Card className="glass-card w-full max-w-md bg-white/20 dark:bg-white/10 border-white/30 dark:border-white/20 backdrop-blur-xl shadow-2xl">
+          <CardHeader className="text-center">
+            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Join Notta.in
+            </CardTitle>
+            <CardDescription className="text-foreground/70">
+              Create your account to get started
+            </CardDescription>
+          </CardHeader>
           
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Already have an account?{' '}
-              <Link 
-                href="/auth/login" 
-                className="text-blue-600 hover:text-blue-500 dark:text-blue-400 font-medium"
+          <CardContent>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <div>
+                <Input
+                  {...register('username')}
+                  type="text"
+                  placeholder="Username"
+                  className={errors.username ? 'border-red-500' : ''}
+                />
+                {errors.username && (
+                  <p className="text-red-500 text-sm mt-1">{errors.username.message}</p>
+                )}
+              </div>
+              
+              <div>
+                <Input
+                  {...register('email')}
+                  type="email"
+                  placeholder="Email address (optional - for account recovery)"
+                  className={errors.email ? 'border-red-500' : ''}
+                />
+                {errors.email && (
+                  <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+                )}
+              </div>
+              
+              <div>
+                <Input
+                  {...register('password')}
+                  type="password"
+                  placeholder="Password"
+                  className={errors.password ? 'border-red-500' : ''}
+                />
+                {errors.password && (
+                  <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+                )}
+              </div>
+              
+              <div>
+                <Input
+                  {...register('confirmPassword')}
+                  type="password"
+                  placeholder="Confirm password"
+                  className={errors.confirmPassword ? 'border-red-500' : ''}
+                />
+                {errors.confirmPassword && (
+                  <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message}</p>
+                )}
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <input
+                  {...register('terms')}
+                  type="checkbox"
+                  id="terms"
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label htmlFor="terms" className="text-sm text-gray-600 dark:text-gray-400">
+                  I agree to the{' '}
+                  <Link href="/terms" className="text-blue-600 hover:text-blue-500 dark:text-blue-400">
+                    Terms and Conditions
+                  </Link>
+                </label>
+              </div>
+              {errors.terms && (
+                <p className="text-red-500 text-sm">{errors.terms.message}</p>
+              )}
+              
+              <IconButton 
+                type="submit" 
+                className="w-full" 
+                disabled={loading}
+                icon="person-add"
+                tooltip="Create your new account"
               >
-                Sign in
-              </Link>
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+                {loading ? 'Creating Account...' : 'Create Account'}
+              </IconButton>
+            </form>
+            
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Already have an account?{' '}
+                <Link 
+                  href="/auth/login" 
+                  className="text-blue-600 hover:text-blue-500 dark:text-blue-400 font-medium"
+                >
+                  Sign in
+                </Link>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </PageLayout>
   )
 }

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { PageLayout } from '@/components/page-layout'
 import { Shield, Users, FileText, Share, Ban, Trash2, Search, Clock } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import toast from 'react-hot-toast'
@@ -224,48 +225,56 @@ export default function AdminPanel() {
     }
 
     const filteredUsers = users.filter(u =>
-        u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.email.toLowerCase().includes(searchTerm.toLowerCase())
+        (u.name?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+        (u.username?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+        (u.email?.toLowerCase().includes(searchTerm.toLowerCase()) || '')
     )
 
     const filteredFiles = files.filter(f =>
-        f.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        f.owner.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        f.owner.email.toLowerCase().includes(searchTerm.toLowerCase())
+        (f.name?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+        (f.owner?.username?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+        (f.owner?.email?.toLowerCase().includes(searchTerm.toLowerCase()) || '')
     )
 
     const filteredShares = shares.filter(s =>
-        s.fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.owner.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.owner.email.toLowerCase().includes(searchTerm.toLowerCase())
+        (s.fileName?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+        (s.owner?.username?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+        (s.owner?.email?.toLowerCase().includes(searchTerm.toLowerCase()) || '')
     )
 
     if (authLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <p className="text-lg">Loading...</p>
+            <PageLayout title="Admin Panel" showBackButton={true} backTo="/dashboard">
+                <div className="flex items-center justify-center min-h-[60vh]">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+                        <p className="text-lg">Loading...</p>
+                    </div>
                 </div>
-            </div>
+            </PageLayout>
         )
     }
 
     if (!user || user.username !== 'admin') {
         console.log('Admin access check failed:', { user, username: user?.username })
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <h1 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h1>
-                    <p className="text-gray-600">You don&apos;t have permission to access this page.</p>
-                    <p className="text-sm text-gray-500 mt-2">Only admin users can access this panel.</p>
+            <PageLayout title="Access Denied" showBackButton={true} backTo="/dashboard">
+                <div className="flex items-center justify-center min-h-[60vh]">
+                    <div className="text-center">
+                        <div className="h-16 w-16 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Shield className="h-8 w-8 text-red-600 dark:text-red-400" />
+                        </div>
+                        <h1 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-2">Access Denied</h1>
+                        <p className="text-gray-600 dark:text-gray-400">You don&apos;t have permission to access this page.</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">Only admin users can access this panel.</p>
+                    </div>
                 </div>
-            </div>
+            </PageLayout>
         )
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 dark:from-gray-900 dark:via-red-900 dark:to-orange-900">
+        <PageLayout title="Admin Panel" showBackButton={true} backTo="/dashboard" className="bg-gradient-to-br from-red-50 via-white to-orange-50 dark:from-gray-900 dark:via-red-900 dark:to-orange-900">
             <div className="container mx-auto px-4 py-8">
                 <div className="max-w-7xl mx-auto">
                     <div className="mb-8">
@@ -340,9 +349,9 @@ export default function AdminPanel() {
                                                 <p className="text-sm text-foreground/70">{user.email}</p>
                                                 <p className="text-xs text-foreground/60">
                                                     <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium mr-2 ${
-                                                        user.plan === 'enterprise' 
+                                                        user.plan === 'premium' 
                                                             ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
-                                                            : user.plan === 'premium'
+                                                            : user.plan === 'pro'
                                                             ? 'bg-gold-100 text-gold-800 dark:bg-yellow-900 dark:text-yellow-200'
                                                             : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
                                                     }`}>
@@ -359,8 +368,8 @@ export default function AdminPanel() {
                                                     className="text-xs px-2 py-1 rounded border bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
                                                 >
                                                     <option value="free">Free</option>
+                                                    <option value="pro">Pro</option>
                                                     <option value="premium">Premium</option>
-                                                    <option value="enterprise">Enterprise</option>
                                                 </select>
 
                                                 {/* Delete User Files */}
@@ -499,6 +508,6 @@ export default function AdminPanel() {
                     )}
                 </div>
             </div>
-        </div>
+        </PageLayout>
     )
 }

@@ -5,9 +5,9 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { FileText, Search, Eye, Calendar, User, ArrowLeft, Folder } from 'lucide-react'
+import { PageLayout } from '@/components/page-layout'
+import { FileText, Search, Eye, Calendar, User, Folder } from 'lucide-react'
 import { formatDate, formatFileSize } from '@/lib/utils'
-import { useRouter } from 'next/navigation'
 
 interface PublicFile {
     _id: string
@@ -25,7 +25,6 @@ interface PublicFile {
 }
 
 export default function ExplorePage() {
-    const router = useRouter()
     const [files, setFiles] = useState<PublicFile[]>([])
     const [loading, setLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState('')
@@ -68,70 +67,50 @@ export default function ExplorePage() {
     }
 
     return (
-        <div className="min-h-screen bg-background">
-            {/* Header */}
-            <div className="border-b bg-card">
-                <div className="max-w-6xl mx-auto px-4 py-6">
-                    <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center space-x-4">
-                            <Button
-                                variant="ghost"
-                                onClick={() => router.back()}
-                                className="flex items-center space-x-2"
-                            >
-                                <ArrowLeft className="h-4 w-4" />
-                                <span>Back</span>
-                            </Button>
-                            <div>
-                                <h1 className="text-3xl font-bold text-primary">Explore</h1>
-                                <p className="text-muted-foreground">Discover public files shared by the community</p>
-                            </div>
-                        </div>
-                        <Link href="/dashboard">
-                            <Button>Go to Dashboard</Button>
-                        </Link>
-                    </div>
+        <PageLayout title="Explore Public Files">
+            <div className="max-w-6xl mx-auto px-4 py-6">
+                <div className="mb-6">
+                    <h1 className="text-3xl font-bold text-primary mb-2">Explore</h1>
+                    <p className="text-muted-foreground">Discover public files shared by the community</p>
+                </div>
 
-                    {/* Search and Filters */}
-                    <div className="flex flex-col sm:flex-row gap-4">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search files or authors..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-10"
-                            />
-                        </div>
-                        <div className="flex space-x-2">
-                            <Button
-                                variant={sortBy === 'recent' ? 'default' : 'outline'}
-                                onClick={() => setSortBy('recent')}
-                                size="sm"
-                            >
-                                Recent
-                            </Button>
-                            <Button
-                                variant={sortBy === 'popular' ? 'default' : 'outline'}
-                                onClick={() => setSortBy('popular')}
-                                size="sm"
-                            >
-                                Popular
-                            </Button>
-                            <Button
-                                variant={sortBy === 'name' ? 'default' : 'outline'}
-                                onClick={() => setSortBy('name')}
-                                size="sm"
-                            >
-                                Name
-                            </Button>
-                        </div>
+                {/* Search and Filters */}
+                <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Search files or authors..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-10"
+                        />
+                    </div>
+                    <div className="flex space-x-2">
+                        <Button
+                            variant={sortBy === 'recent' ? 'default' : 'outline'}
+                            onClick={() => setSortBy('recent')}
+                            size="sm"
+                        >
+                            Recent
+                        </Button>
+                        <Button
+                            variant={sortBy === 'popular' ? 'default' : 'outline'}
+                            onClick={() => setSortBy('popular')}
+                            size="sm"
+                        >
+                            Popular
+                        </Button>
+                        <Button
+                            variant={sortBy === 'name' ? 'default' : 'outline'}
+                            onClick={() => setSortBy('name')}
+                            size="sm"
+                        >
+                            Name
+                        </Button>
                     </div>
                 </div>
-            </div>
 
-            {/* Content */}
-            <div className="max-w-6xl mx-auto px-4 py-8">
+                {/* Content */}
                 {loading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {[...Array(6)].map((_, i) => (
@@ -201,17 +180,17 @@ export default function ExplorePage() {
                                         <Calendar className="h-3 w-3" />
                                         <span>Shared {formatDate(file.createdAt)}</span>
                                     </div>
-                  <Link href={`/share/${file.slug}`}>
-                    <Button className="w-full" size="sm">
-                      {file.type === 'folder' ? 'Browse Folder' : 'View File'}
-                    </Button>
-                  </Link>
+                                    <Link href={`/share/${file.slug}`}>
+                                        <Button className="w-full" size="sm">
+                                            {file.type === 'folder' ? 'Browse Folder' : 'View File'}
+                                        </Button>
+                                    </Link>
                                 </CardContent>
                             </Card>
                         ))}
                     </div>
                 )}
             </div>
-        </div>
+        </PageLayout>
     )
 }

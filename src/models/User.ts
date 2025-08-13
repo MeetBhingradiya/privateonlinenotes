@@ -3,7 +3,7 @@ import mongoose from 'mongoose'
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
+    required: false,
   },
   username: {
     type: String,
@@ -27,13 +27,21 @@ const UserSchema = new mongoose.Schema({
   },
   plan: {
     type: String,
-    enum: ['free', 'premium', 'enterprise'],
+    enum: ['free', 'pro', 'premium'],
     default: 'free',
   },
   avatar: String,
   isBlocked: {
     type: Boolean,
     default: false,
+  },
+  resetToken: {
+    type: String,
+    required: false,
+  },
+  resetTokenExpiry: {
+    type: Date,
+    required: false,
   },
   paymentHistory: [{
     orderId: String,
@@ -63,13 +71,15 @@ export const User = mongoose.models.User || mongoose.model('User', UserSchema)
 
 export interface IUser {
   _id: string
-  name: string
+  name?: string
   username: string
-  email: string
+  email?: string
   password: string
-  plan: 'free' | 'premium' | 'enterprise'
+  plan: 'free' | 'pro' | 'premium'
   avatar?: string
   isBlocked: boolean
+  resetToken?: string
+  resetTokenExpiry?: Date
   paymentHistory: Array<{
     orderId: string
     paymentId: string
