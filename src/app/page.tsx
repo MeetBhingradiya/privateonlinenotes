@@ -1,58 +1,13 @@
 import Link from 'next/link'
 import { IconButton, Button } from '@/components/ui/button'
 import { Icon } from '@iconify/react'
-import { ThemeToggle } from '@/components/theme-toggle'
+import { Header } from '@/components/header'
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
-      <nav className="glass-nav sticky top-4 z-50 mx-4 bg-white/10 dark:bg-white/5 border-white/20 dark:border-white/10">
-        <div className="container flex h-16 items-center justify-between px-6">
-          <div className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
-              <Icon icon="material-symbols:description" className="h-4 w-4 text-white" />
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Notta.in</span>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <div className="hidden md:flex items-center space-x-6">
-              <Link href="/explore" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors backdrop-blur-sm">
-                Explore
-              </Link>
-              <Link href="/pricing" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors backdrop-blur-sm">
-                Pricing
-              </Link>
-              <Link href="/contact" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors backdrop-blur-sm">
-                Contact
-              </Link>
-            </div>
-            <div className="flex items-center space-x-2">
-              <ThemeToggle />
-              <Link href="/auth/login">
-                <IconButton 
-                  variant="ghost" 
-                  size="sm" 
-                  icon="login" 
-                  tooltip="Sign in to your account"
-                >
-                  Sign In
-                </IconButton>
-              </Link>
-              <Link href="/auth/register">
-                <IconButton 
-                  size="sm" 
-                  icon="person-add" 
-                  tooltip="Create a new account"
-                >
-                  Get Started
-                </IconButton>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Header />
 
       {/* Hero Section */}
       <section className="py-20 px-4">

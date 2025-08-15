@@ -109,7 +109,7 @@ const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
       return (
         <Tooltip>
           <TooltipTrigger asChild>{buttonContent}</TooltipTrigger>
-          <TooltipContent>
+          <TooltipContent side="right" sideOffset={8}>
             <p>{tooltip}</p>
           </TooltipContent>
         </Tooltip>

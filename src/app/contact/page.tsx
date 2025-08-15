@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft, Mail, MapPin, Phone } from 'lucide-react'
+import { Header } from '@/components/header'
 import toast from 'react-hot-toast'
 
 const contactSchema = z.object({
@@ -57,6 +58,7 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Header />
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">

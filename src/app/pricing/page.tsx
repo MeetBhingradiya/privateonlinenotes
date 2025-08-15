@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft, Check, Star } from 'lucide-react'
 import { useAuth } from '@/components/providers/auth-provider'
+import { Header } from '@/components/header'
 import toast from 'react-hot-toast'
 
 declare global {
@@ -190,6 +191,7 @@ export default function PricingPage() {
 
     return (
         <div className="min-h-screen bg-background">
+            <Header />
             <div className="container mx-auto px-4 py-8">
                 <div className="max-w-6xl mx-auto">
                     <div className="mb-8">

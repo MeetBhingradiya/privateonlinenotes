@@ -3,9 +3,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Editor } from '@monaco-editor/react'
 import { Button } from '@/components/ui/button'
-import { Save, Download, Share } from 'lucide-react'
+import { Download, Share, Settings } from 'lucide-react'
 import { Icon } from '@iconify/react'
 import { useTheme } from 'next-themes'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import toast from 'react-hot-toast'
 
 interface FileItem {
@@ -29,23 +30,43 @@ export function MonacoEditor({ file, onSave, onChange, readOnly = false }: Monac
     const [content, setContent] = useState(file.content || '')
     const [hasChanges, setHasChanges] = useState(false)
     const [saving, setSaving] = useState(false)
+    const [selectedLanguage, setSelectedLanguage] = useState<string>('')
+    const [showLanguageSelect, setShowLanguageSelect] = useState(false)
 
     useEffect(() => {
         setContent(file.content || '')
         setHasChanges(false)
+        // Set initial language from file extension or stored language
+        const detectedLanguage = file.language || getLanguage(file.name)
+        setSelectedLanguage(detectedLanguage)
     }, [file])
+
+    const handleContentChange = (value: string | undefined) => {
+        if (!readOnly) {
+            const newContent = value || ''
+            setContent(newContent)
+            // Immediately update hasChanges when content changes
+            const originalContent = file.content || ''
+            const hasNewChanges = newContent !== originalContent
+            setHasChanges(hasNewChanges)
+            onChange?.(newContent)
+        }
+    }
 
     const handleSave = useCallback(async () => {
         setSaving(true)
         try {
             await onSave(content)
             setHasChanges(false)
+            toast.success('File saved successfully!')
+            // Update the file content reference to match current content
+            file.content = content
         } catch {
             toast.error('Failed to save file')
         } finally {
             setSaving(false)
         }
-    }, [onSave, content])
+    }, [onSave, content, file])
 
     // Handle keyboard shortcuts
     useEffect(() => {
@@ -53,7 +74,7 @@ export function MonacoEditor({ file, onSave, onChange, readOnly = false }: Monac
             // Ctrl+S to save
             if ((e.ctrlKey || e.metaKey) && e.key === 's') {
                 e.preventDefault()
-                if (hasChanges) {
+                if (hasChanges && !saving) {
                     handleSave()
                 }
             }
@@ -61,7 +82,34 @@ export function MonacoEditor({ file, onSave, onChange, readOnly = false }: Monac
 
         window.addEventListener('keydown', handleKeyDown)
         return () => window.removeEventListener('keydown', handleKeyDown)
-    }, [hasChanges, handleSave])
+    }, [hasChanges, handleSave, saving])
+
+    const availableLanguages = [
+        { value: 'javascript', label: 'JavaScript' },
+        { value: 'typescript', label: 'TypeScript' },
+        { value: 'python', label: 'Python' },
+        { value: 'html', label: 'HTML' },
+        { value: 'css', label: 'CSS' },
+        { value: 'scss', label: 'SCSS' },
+        { value: 'json', label: 'JSON' },
+        { value: 'markdown', label: 'Markdown' },
+        { value: 'xml', label: 'XML' },
+        { value: 'sql', label: 'SQL' },
+        { value: 'yaml', label: 'YAML' },
+        { value: 'shell', label: 'Shell/Bash' },
+        { value: 'php', label: 'PHP' },
+        { value: 'java', label: 'Java' },
+        { value: 'cpp', label: 'C++' },
+        { value: 'c', label: 'C' },
+        { value: 'csharp', label: 'C#' },
+        { value: 'go', label: 'Go' },
+        { value: 'rust', label: 'Rust' },
+        { value: 'ruby', label: 'Ruby' },
+        { value: 'swift', label: 'Swift' },
+        { value: 'kotlin', label: 'Kotlin' },
+        { value: 'dart', label: 'Dart' },
+        { value: 'plaintext', label: 'Plain Text' },
+    ]
 
     const getLanguage = (filename: string): string => {
         const ext = filename.split('.').pop()?.toLowerCase()
@@ -97,6 +145,11 @@ export function MonacoEditor({ file, onSave, onChange, readOnly = false }: Monac
         return languageMap[ext || ''] || 'plaintext'
     }
 
+    const handleLanguageChange = (newLanguage: string) => {
+        setSelectedLanguage(newLanguage)
+        setShowLanguageSelect(false)
+    }
+
     const handleDownload = () => {
         const blob = new Blob([content], { type: 'text/plain' })
         const url = URL.createObjectURL(blob)
@@ -129,11 +182,42 @@ export function MonacoEditor({ file, onSave, onChange, readOnly = false }: Monac
     }
 
     return (
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full relative">
             {/* Toolbar */}
             <div className="flex items-center justify-between p-4 border-b bg-card">
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-4">
                     <h2 className="font-semibold text-lg">{file.name}</h2>
+                    
+                    {/* Language selector */}
+                    <div className="flex items-center space-x-2">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setShowLanguageSelect(!showLanguageSelect)}
+                            className="text-xs"
+                        >
+                            <Settings className="h-3 w-3 mr-1" />
+                            {availableLanguages.find(lang => lang.value === selectedLanguage)?.label || 'Language'}
+                        </Button>
+                        
+                        {showLanguageSelect && (
+                            <div className="absolute top-16 left-4 z-50">
+                                <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
+                                    <SelectTrigger className="w-48">
+                                        <SelectValue placeholder="Select language" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {availableLanguages.map((lang) => (
+                                            <SelectItem key={lang.value} value={lang.value}>
+                                                {lang.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
+                    </div>
+
                     {hasChanges && (
                         <div className="flex items-center space-x-2">
                             <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full dark:bg-orange-900 dark:text-orange-200 font-medium">
@@ -146,6 +230,7 @@ export function MonacoEditor({ file, onSave, onChange, readOnly = false }: Monac
                         </div>
                     )}
                 </div>
+                
                 <div className="flex items-center space-x-2">
                     <Button
                         variant="outline"
@@ -161,24 +246,6 @@ export function MonacoEditor({ file, onSave, onChange, readOnly = false }: Monac
                     >
                         <Share className="h-4 w-4" />
                     </Button>
-                    {/* <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => toast('Version history coming soon!')}
-                    >
-                        <History className="h-4 w-4 mr-1" />
-                        History
-                    </Button> */}   
-                    {!readOnly && (
-                        <Button
-                            onClick={handleSave}
-                            disabled={!hasChanges || saving}
-                            size="sm"
-                        >
-                            <Save className="h-4 w-4 mr-1" />
-                            {saving ? 'Saving...' : 'Save'}
-                        </Button>
-                    )}
                 </div>
             </div>
 
@@ -186,16 +253,10 @@ export function MonacoEditor({ file, onSave, onChange, readOnly = false }: Monac
             <div className="flex-1">
                 <Editor
                     height="100%"
-                    language={getLanguage(file.name)}
+                    language={selectedLanguage}
                     value={content}
-                    onChange={(value) => {
-                        if (!readOnly) {
-                            setContent(value || '')
-                            setHasChanges(value !== file.content)
-                            onChange?.(value || '')
-                        }
-                    }}
-                    theme={theme === 'dark' ? 'vs-dark' : 'light'}
+                    onChange={handleContentChange}
+                    theme={theme === 'dark' ? 'vs-dark' : 'vs-light'}
                     options={{
                         fontSize: 14,
                         fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'SF Mono', monospace",
@@ -213,9 +274,14 @@ export function MonacoEditor({ file, onSave, onChange, readOnly = false }: Monac
                         formatOnType: true,
                         suggestOnTriggerCharacters: true,
                         quickSuggestions: true,
-                        parameterHints: { enabled: false },
-                        hover: { enabled: false },
+                        parameterHints: { enabled: true },
+                        hover: { enabled: true },
                         readOnly: readOnly,
+                        renderLineHighlight: 'all',
+                        selectOnLineNumbers: true,
+                        roundedSelection: false,
+                        cursorStyle: 'line',
+                        cursorBlinking: 'blink',
                     }}
                 />
             </div>
@@ -223,12 +289,17 @@ export function MonacoEditor({ file, onSave, onChange, readOnly = false }: Monac
             {/* Status Bar */}
             <div className="flex items-center justify-between p-2 bg-muted text-sm text-muted-foreground border-t">
                 <div className="flex items-center space-x-4">
-                    <span>Language: {getLanguage(file.name)}</span>
+                    <span>Language: {availableLanguages.find(lang => lang.value === selectedLanguage)?.label || 'Unknown'}</span>
                     <span>Size: {content.length} characters</span>
+                    <span>Lines: {content.split('\n').length}</span>
                 </div>
                 <div className="flex items-center space-x-4">
                     <span>Last saved: {new Date(file.updatedAt).toLocaleTimeString()}</span>
-                    <span>Lines: {content.split('\n').length}</span>
+                    {hasChanges && (
+                        <span className="text-orange-600 dark:text-orange-400 font-medium">
+                            • Modified
+                        </span>
+                    )}
                 </div>
             </div>
         </div>

@@ -406,7 +406,7 @@ export default function DashboardPage() {
     return (
         <div className="flex h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-blue-900 dark:to-purple-900 overflow-hidden">
             {/* Sidebar */}
-            <div className={`glass-sidebar ${sidebarCollapsed ? 'w-20' : 'w-72'} transition-all duration-300 ${sidebarCollapsed ? 'px-3 py-4' : 'px-5 py-4'} bg-white/10 dark:bg-white/5 border-r border-white/20 dark:border-white/10 backdrop-blur-xl flex flex-col h-full`}>
+            <div className={`glass-sidebar ${sidebarCollapsed ? 'w-20' : 'w-72'} transition-all duration-300 ${sidebarCollapsed ? 'px-3 py-4' : 'px-5 py-4'} bg-white/10 dark:bg-white/5 border-r border-white/20 dark:border-white/10 backdrop-blur-xl flex flex-col h-full relative z-10`}>
                 {/* Header with collapse toggle */}
                 <div className={`flex items-center ${sidebarCollapsed ? 'flex-col' : 'justify-between'} ${sidebarCollapsed ? 'mb-4' : 'mb-6'}`}>
                     {!sidebarCollapsed && (
@@ -838,12 +838,12 @@ export default function DashboardPage() {
                                                 )}
                                                 <span className="text-sm font-medium text-foreground flex items-center">
                                                     {file.name}
-                                                    {selectedFile?._id === file._id && hasUnsavedChanges && (
+                                                    {/* {selectedFile?._id === file._id && hasUnsavedChanges && (
                                                         <span className="ml-2 flex items-center text-amber-600 dark:text-amber-400" title="Unsaved changes">
                                                             <Icon icon="material-symbols:circle" className="h-2 w-2 mr-1 animate-pulse" />
                                                             <span className="text-xs">*</span>
                                                         </span>
-                                                    )}
+                                                    )} */}
                                                 </span>
                                             </div>
                                             <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -885,7 +885,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Editor */}
-                <div className="flex-1 bg-white/3 dark:bg-white/2 backdrop-blur-sm border-l border-white/10 dark:border-white/5 h-full overflow-hidden">
+                <div className="flex-1 bg-white/3 dark:bg-white/2 backdrop-blur-sm border-l border-white/10 dark:border-white/5 h-full overflow-hidden relative z-0">
                     {selectedFile ? (
                         <div className="h-full glass-card rounded-none border-0 bg-white/5 dark:bg-white/3 backdrop-blur-lg relative">
                             <MonacoEditor

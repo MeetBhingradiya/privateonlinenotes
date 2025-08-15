@@ -20,6 +20,7 @@ const UserSchema = new mongoose.Schema({
     required: false,
     unique: true,
     sparse: true, // Allow multiple documents without email
+    // Don't set any default value to ensure field is omitted when not provided
   },
   password: {
     type: String,
