@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/components/providers/auth-provider'
 import { useState, useEffect, useCallback } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { IconButton } from '@/components/ui/button'
@@ -10,9 +11,14 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Icon } from '@iconify/react'
 import { useTheme } from 'next-themes'
 import { formatDate, formatFileSize } from '@/lib/utils'
-import { MonacoEditor } from '@/components/editor/monaco-editor'
 import { ShareModal } from '@/components/share-modal'
 import toast from 'react-hot-toast'
+
+// Dynamically import MonacoEditor to prevent SSR issues
+const MonacoEditor = dynamic(() => import('@/components/editor/monaco-editor').then(mod => ({ default: mod.MonacoEditor })), {
+    ssr: false,
+    loading: () => <div className="flex items-center justify-center h-96"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>
+})
 
 interface FileItem {
     _id: string
@@ -71,6 +77,9 @@ export default function DashboardPage() {
 
     // Add beforeunload event listener to warn about unsaved changes
     useEffect(() => {
+        // Only add event listeners on the client side
+        if (typeof window === 'undefined') return
+
         const handleBeforeUnload = (e: BeforeUnloadEvent) => {
             if (hasUnsavedChanges) {
                 e.preventDefault()
@@ -80,10 +89,29 @@ export default function DashboardPage() {
         }
 
         const handleKeyDown = (e: KeyboardEvent) => {
-            // Ctrl+S to save
+            // Only handle shortcuts when not focused on the editor
+            const activeElement = document.activeElement
+            const isEditorFocused = activeElement?.closest('.monaco-editor')
+            
+            if (!isEditorFocused) {
+                // Ctrl+N for new file
+                if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === 'n') {
+                    e.preventDefault()
+                    setIsCreating(true)
+                    setNewItemType('file')
+                }
+                // Ctrl+Shift+N for new folder
+                else if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'N') {
+                    e.preventDefault()
+                    setIsCreating(true)
+                    setNewItemType('folder')
+                }
+            }
+            
+            // Ctrl+S should work everywhere but let Monaco handle it when editor is focused
             if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-                e.preventDefault()
-                if (selectedFile && hasUnsavedChanges && selectedFile.content) {
+                if (!isEditorFocused && selectedFile && hasUnsavedChanges && selectedFile.content) {
+                    e.preventDefault()
                     // Call save through a callback to avoid dependency issues
                     const saveContent = async () => {
                         try {
@@ -570,38 +598,6 @@ export default function DashboardPage() {
                     <IconButton
                         variant="ghost"
                         className={`w-full ${sidebarCollapsed ? 'justify-center px-0 h-10' : 'justify-start px-3 h-11'} hover:bg-white/20 rounded-xl transition-all duration-200`}
-                        onClick={() => {
-                            setIsCreating(true)
-                            setNewItemType('file')
-                        }}
-                        icon="description"
-                        tooltip="Create a new file"
-                        iconSize={sidebarCollapsed ? 20 : 16}
-                    >
-                        {!sidebarCollapsed && <span className="text-sm font-medium">New File</span>}
-                    </IconButton>
-                    <IconButton
-                        variant="ghost"
-                        className={`w-full ${sidebarCollapsed ? 'justify-center px-0 h-10' : 'justify-start px-3 h-11'} hover:bg-white/20 rounded-xl transition-all duration-200`}
-                        onClick={() => {
-                            setIsCreating(true)
-                            setNewItemType('folder')
-                        }}
-                        icon="create-new-folder"
-                        tooltip="Create a new folder"
-                        iconSize={sidebarCollapsed ? 20 : 16}
-                    >
-                        {!sidebarCollapsed && <span className="text-sm font-medium">New Folder</span>}
-                    </IconButton>
-
-                    {/* Divider */}
-                    <div className="py-2 ">
-                        <div className="h-px bg-white/20 dark:bg-white/10"></div>
-                    </div>
-
-                    <IconButton
-                        variant="ghost"
-                        className={`w-full ${sidebarCollapsed ? 'justify-center px-0 h-10' : 'justify-start px-3 h-11'} hover:bg-white/20 rounded-xl transition-all duration-200`}
                         icon="explore"
                         tooltip="Browse public files from other users"
                         iconSize={sidebarCollapsed ? 20 : 16}
@@ -661,8 +657,11 @@ export default function DashboardPage() {
                 {/* File Explorer */}
                 <div className="glass-sidebar w-80 border-r border-white/20 dark:border-white/10 bg-white/5 dark:bg-white/3 backdrop-blur-lg flex flex-col h-full overflow-hidden">
                     <div className="p-6 border-b border-white/20 dark:border-white/10 flex-shrink-0">
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="font-semibold text-foreground text-lg">Files</h2>
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center space-x-2">
+                                <Icon icon="material-symbols:folder" className="h-5 w-5 text-blue-500" />
+                                <h2 className="font-semibold text-foreground text-lg">Explorer</h2>
+                            </div>
                             <div className="flex items-center space-x-1 glass p-1 rounded-lg bg-white/10 dark:bg-white/5 border-white/20 dark:border-white/10">
                                 <IconButton
                                     variant="ghost"
@@ -682,6 +681,7 @@ export default function DashboardPage() {
                                 />
                             </div>
                         </div>
+                        
                         <div className="relative mb-4">
                             <Icon icon="material-symbols:search" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-foreground/50" />
                             <Input
@@ -694,61 +694,89 @@ export default function DashboardPage() {
                     </div>
 
                     <div className="p-6 flex-1 overflow-y-auto">
-                        {/* Breadcrumb */}
-                        <div className="mb-6">
-                            <div className="text-sm text-foreground/60 mb-2">
-                                <button
-                                    onClick={() => {
-                                        if (hasUnsavedChanges && selectedFile) {
-                                            const confirmNavigate = confirm(
-                                                `You have unsaved changes in "${selectedFile.name}". Do you want to save before navigating?\n\nClick "OK" to save and navigate, or "Cancel" to navigate without saving.`
-                                            )
-                                            if (confirmNavigate) {
-                                                saveFile(selectedFile.content || '').then(() => {
+                        {/* Breadcrumb with VS Code style quick actions */}
+                        <div className="mb-4">
+                            <div className="text-sm text-foreground/60 mb-2 flex items-center justify-between">
+                                {/* Breadcrumb navigation */}
+                                <div className="flex items-center">
+                                    <Icon icon="material-symbols:home" className="h-4 w-4 mr-1" />
+                                    <button
+                                        onClick={() => {
+                                            if (hasUnsavedChanges && selectedFile) {
+                                                const confirmNavigate = confirm(
+                                                    `You have unsaved changes in "${selectedFile.name}". Do you want to save before navigating?\n\nClick "OK" to save and navigate, or "Cancel" to navigate without saving.`
+                                                )
+                                                if (confirmNavigate) {
+                                                    saveFile(selectedFile.content || '').then(() => {
+                                                        setCurrentPath('/')
+                                                    })
+                                                } else {
+                                                    setHasUnsavedChanges(false)
                                                     setCurrentPath('/')
-                                                })
+                                                }
                                             } else {
-                                                setHasUnsavedChanges(false)
                                                 setCurrentPath('/')
                                             }
-                                        } else {
-                                            setCurrentPath('/')
-                                        }
-                                    }}
-                                    className="hover:text-foreground transition-colors font-medium"
-                                >
-                                    Root
-                                </button>
-                                {currentPath !== '/' && currentPath.split('/').filter(Boolean).map((part, index, arr) => (
-                                    <span key={index}>
-                                        {' / '}
-                                        <button
-                                            onClick={() => {
-                                                if (hasUnsavedChanges && selectedFile) {
-                                                    const confirmNavigate = confirm(
-                                                        `You have unsaved changes in "${selectedFile.name}". Do you want to save before navigating?\n\nClick "OK" to save and navigate, or "Cancel" to navigate without saving.`
-                                                    )
-                                                    if (confirmNavigate) {
-                                                        saveFile(selectedFile.content || '').then(() => {
+                                        }}
+                                        className="hover:text-foreground transition-colors font-medium hover:bg-white/10 px-2 py-1 rounded"
+                                    >
+                                        Root
+                                    </button>
+                                    {currentPath !== '/' && currentPath.split('/').filter(Boolean).map((part, index, arr) => (
+                                        <span key={index}>
+                                            <Icon icon="material-symbols:chevron-right" className="h-3 w-3 mx-1 text-foreground/40" />
+                                            <button
+                                                onClick={() => {
+                                                    if (hasUnsavedChanges && selectedFile) {
+                                                        const confirmNavigate = confirm(
+                                                            `You have unsaved changes in "${selectedFile.name}". Do you want to save before navigating?\n\nClick "OK" to save and navigate, or "Cancel" to navigate without saving.`
+                                                        )
+                                                        if (confirmNavigate) {
+                                                            saveFile(selectedFile.content || '').then(() => {
+                                                                const newPath = '/' + arr.slice(0, index + 1).join('/')
+                                                                setCurrentPath(newPath)
+                                                            })
+                                                        } else {
+                                                            setHasUnsavedChanges(false)
                                                             const newPath = '/' + arr.slice(0, index + 1).join('/')
                                                             setCurrentPath(newPath)
-                                                        })
+                                                        }
                                                     } else {
-                                                        setHasUnsavedChanges(false)
                                                         const newPath = '/' + arr.slice(0, index + 1).join('/')
                                                         setCurrentPath(newPath)
                                                     }
-                                                } else {
-                                                    const newPath = '/' + arr.slice(0, index + 1).join('/')
-                                                    setCurrentPath(newPath)
-                                                }
-                                            }}
-                                            className="hover:text-foreground transition-colors font-medium"
-                                        >
-                                            {part}
-                                        </button>
-                                    </span>
-                                ))}
+                                                }}
+                                                className="hover:text-foreground transition-colors font-medium hover:bg-white/10 px-2 py-1 rounded"
+                                            >
+                                                {part}
+                                            </button>
+                                        </span>
+                                    ))}
+                                </div>
+
+                                {/* VS Code style quick actions */}
+                                <div className="flex items-center space-x-1">
+                                    <button
+                                        onClick={() => {
+                                            setIsCreating(true)
+                                            setNewItemType('file')
+                                        }}
+                                        title="New File (Ctrl+N)"
+                                        className="p-1.5 hover:bg-white/10 rounded transition-colors text-foreground/60 hover:text-foreground"
+                                    >
+                                        <Icon icon="material-symbols:description" className="h-4 w-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setIsCreating(true)
+                                            setNewItemType('folder')
+                                        }}
+                                        title="New Folder (Ctrl+Shift+N)"
+                                        className="p-1.5 hover:bg-white/10 rounded transition-colors text-foreground/60 hover:text-foreground"
+                                    >
+                                        <Icon icon="material-symbols:create-new-folder" className="h-4 w-4" />
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Unsaved changes warning in breadcrumb area */}
@@ -899,7 +927,24 @@ export default function DashboardPage() {
                             <div className="text-center glass-card p-8 bg-white/10 dark:bg-white/5 border-white/20 dark:border-white/10">
                                 <Icon icon="material-symbols:description" className="h-16 w-16 mx-auto mb-4 opacity-50 drop-shadow-lg" />
                                 <h3 className="text-lg font-medium mb-2 text-foreground">No file selected</h3>
-                                <p className="text-foreground/70">Select a file from the sidebar to start editing</p>
+                                <p className="text-foreground/70 mb-4">Select a file from the explorer to start editing</p>
+                                
+                                {/* Keyboard shortcuts hint */}
+                                <div className="text-xs text-foreground/50 space-y-1 mt-4 p-3 bg-white/10 rounded-lg">
+                                    <p className="font-medium text-foreground/70 mb-2">Quick Actions:</p>
+                                    <div className="flex justify-between">
+                                        <span>New File:</span>
+                                        <kbd className="px-2 py-1 bg-white/20 rounded text-xs">Ctrl+N</kbd>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>New Folder:</span>
+                                        <kbd className="px-2 py-1 bg-white/20 rounded text-xs">Ctrl+Shift+N</kbd>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Save File:</span>
+                                        <kbd className="px-2 py-1 bg-white/20 rounded text-xs">Ctrl+S</kbd>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}

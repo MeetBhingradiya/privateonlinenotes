@@ -60,7 +60,7 @@ export default async function SharePage({ params }: SharePageProps) {
     const { shareCode } = await params
     const file = await getSharedFile(shareCode)
 
-    if (!file || !file.owner) {
+    if (!file) {
         notFound()
     }
 
@@ -75,14 +75,16 @@ export async function generateMetadata({ params }: SharePageProps) {
     const { shareCode } = await params
     const file = await getSharedFile(shareCode)
 
-    if (!file || !file.owner) {
+    if (!file) {
         return {
             title: 'File not found - Notta.in',
         }
     }
 
+    const ownerName = file.owner ? file.owner.name : 'Anonymous'
+    
     return {
         title: `${file.name} - Shared on Notta.in`,
-        description: `File shared by ${file.owner.name} on Notta.in`,
+        description: `File shared by ${ownerName} on Notta.in`,
     }
 }

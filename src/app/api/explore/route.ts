@@ -8,11 +8,14 @@ export async function GET(request: NextRequest) {
         const sort = searchParams.get('sort') || 'recent'
         const limit = parseInt(searchParams.get('limit') || '50')
 
-        // Only return public files that are not blocked and have slugs
+        // Only return public files that are not blocked
         const query = {
             isPublic: true,
             isBlocked: false,
-            slug: { $exists: true, $ne: null }
+            $or: [
+                { slug: { $exists: true, $ne: null } }, // Files with slugs
+                { shareCode: { $exists: true, $ne: null } } // Anonymous files with shareCodes
+            ]
         }
 
         let sortOptions: any = { createdAt: -1 } // Default: recent
@@ -32,27 +35,26 @@ export async function GET(request: NextRequest) {
 
         const files = await File.find(query)
             .populate('owner', 'name')
-            .select('name type slug language size accessCount createdAt updatedAt owner')
+            .select('name type slug shareCode language size accessCount createdAt updatedAt owner')
             .sort(sortOptions)
             .limit(limit)
             .lean()
 
-        // Filter out files where owner is null (orphaned files)
-        const validFiles = files.filter((file: any) => file.owner)
-
-        const formattedFiles = validFiles.map((file: any) => ({
+        // Include all files (both with owners and anonymous)
+        const formattedFiles = files.map((file: any) => ({
             _id: file._id.toString(),
             name: file.name,
             type: file.type,
             slug: file.slug,
+            shareCode: file.shareCode,
             language: file.language || 'plaintext',
             size: file.size,
             accessCount: file.accessCount || 0,
             createdAt: file.createdAt.toISOString(),
             updatedAt: file.updatedAt.toISOString(),
-            owner: {
+            owner: file.owner ? {
                 name: file.owner.name
-            }
+            } : null
         }))
 
         return NextResponse.json(formattedFiles)

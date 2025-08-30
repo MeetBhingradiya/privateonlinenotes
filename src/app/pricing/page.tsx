@@ -151,7 +151,9 @@ export default function PricingPage() {
 
                             if (verifyResponse.ok) {
                                 toast.success('Subscription activated successfully!')
-                                window.location.reload()
+                                if (typeof window !== 'undefined') {
+                                    window.location.reload()
+                                }
                             } else {
                                 throw new Error('Payment verification failed')
                             }

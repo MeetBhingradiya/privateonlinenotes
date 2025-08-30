@@ -18,10 +18,10 @@ interface SharedFile {
   size: number
   createdAt: string
   updatedAt: string
-  owner: {
+  owner?: {
     name: string
     email: string
-  }
+  } | null
 }
 
 interface ShareViewerProps {
@@ -69,7 +69,7 @@ export function ShareViewer({ file }: ShareViewerProps) {
               <div>
                 <h2 className="font-semibold text-lg">{file.name}</h2>
                 <p className="text-sm text-muted-foreground">
-                  Shared by {file.owner.name}
+                  Shared by {file.owner ? file.owner.name : 'Anonymous'}
                 </p>
               </div>
             </div>
@@ -140,7 +140,7 @@ export function ShareViewer({ file }: ShareViewerProps) {
                   </h4>
                   <div className="flex items-center space-x-2">
                     <User className="h-4 w-4" />
-                    <p className="text-sm">{file.owner.name}</p>
+                    <p className="text-sm">{file.owner ? file.owner.name : 'Anonymous'}</p>
                   </div>
                 </div>
               </CardContent>

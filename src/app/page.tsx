@@ -1,57 +1,65 @@
 import Link from 'next/link'
-import { IconButton, Button } from '@/components/ui/button'
-import { Icon } from '@iconify/react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { FileText, Share, Lock, Zap, Users, Globe, Sparkles, ArrowRight, Play, Code, Eye } from 'lucide-react'
 import { Header } from '@/components/header'
+import { Footer } from '@/components/footer'
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-background">
-      {/* Navigation */}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-950 dark:via-blue-950 dark:to-indigo-950">
       <Header />
 
       {/* Hero Section */}
-      <section className="py-20 px-4">
-        <div className="container max-w-6xl mx-auto">
-          <div className="text-center space-y-8">
-            <div className="inline-flex items-center rounded-full glass border-white/30 px-6 py-3 text-sm bg-white/20 dark:bg-white/10 backdrop-blur-md">
-              <Icon icon="material-symbols:auto-awesome" className="mr-2 h-4 w-4 text-blue-600" />
-              <span className="font-medium">Fast, secure, and beautiful note sharing</span>
+      <section className="relative py-20 px-4 overflow-hidden">
+        <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+        <div className="container max-w-7xl mx-auto relative">
+          <div className="text-center space-y-8 max-w-4xl mx-auto">
+            <div className="inline-flex items-center rounded-full border bg-card/80 backdrop-blur-sm px-6 py-3 text-sm shadow-lg">
+              <Sparkles className="mr-2 h-4 w-4 text-blue-600" />
+              <span className="font-medium">Beautiful. Fast. Secure.</span>
             </div>
             
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight">
-              Share notes
-              <span className="block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                beautifully
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight">
+              Share Your
+              <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                Ideas Instantly
               </span>
             </h1>
             
-            <p className="max-w-2xl mx-auto text-xl text-foreground/70 leading-relaxed">
-              Create, edit, and share your notes and code snippets with the world. 
-              Perfect for developers, students, and teams who value simplicity.
+            <p className="max-w-3xl mx-auto text-xl md:text-2xl text-muted-foreground leading-relaxed">
+              Create, edit, and share notes, code snippets, and documents with anyone. 
+              No signup required for quick sharing, or create an account for advanced features.
             </p>
             
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <Link href="/auth/register">
-                <IconButton 
-                  size="lg" 
-                  className="w-full sm:w-auto" 
-                  icon="rocket-launch" 
-                  tooltip="Start creating and sharing notes for free"
-                >
-                  Start for free
-                </IconButton>
+                <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-xl hover:shadow-2xl transition-all duration-300 text-lg px-8 py-6">
+                  <Play className="mr-2 h-5 w-5" />
+                  Get Started Free
+                </Button>
               </Link>
               <Link href="/anonymous">
-                <IconButton 
-                  size="lg" 
-                  variant="outline" 
-                  className="w-full sm:w-auto" 
-                  icon="visibility" 
-                  tooltip="Try our platform without creating an account"
-                >
-                  Try without signup
-                </IconButton>
+                <Button size="lg" variant="outline" className="border-2 hover:bg-card/80 backdrop-blur-sm shadow-lg text-lg px-8 py-6">
+                  <FileText className="mr-2 h-5 w-5" />
+                  Try Anonymous Mode
+                </Button>
               </Link>
+            </div>
+
+            <div className="flex items-center justify-center gap-8 pt-8 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span>No credit card required</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                <span>Instant sharing</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
+                <span>Beautiful editor</span>
+              </div>
             </div>
           </div>
         </div>
@@ -59,131 +67,169 @@ export default function HomePage() {
 
       {/* Features Section */}
       <section className="py-20 px-4">
-        <div className="container max-w-6xl mx-auto">
+        <div className="container max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Everything you need to share
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Everything you need to
+              <span className="block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                share beautifully
+              </span>
             </h2>
-            <p className="text-xl text-foreground/70 max-w-2xl mx-auto">
-              Built with modern web technologies for the best experience
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Powerful features designed for developers, writers, and teams who value simplicity and security.
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                icon: "material-symbols:code",
-                title: "Monaco Editor",
-                description: "Professional code editor with syntax highlighting for 100+ languages"
-              },
-              {
-                icon: "material-symbols:share",
-                title: "Instant Sharing",
-                description: "Generate secure shareable links in seconds with custom expiry options"
-              },
-              {
-                icon: "material-symbols:shield",
-                title: "Privacy First",
-                description: "Your data is encrypted and secure. Anonymous sharing available"
-              },
-              {
-                icon: "material-symbols:public",
-                title: "No Account Required",
-                description: "Create and share notes instantly without any registration"
-              },
-              {
-                icon: "material-symbols:description",
-                title: "Rich Formatting",
-                description: "Support for markdown, code blocks, and rich text formatting"
-              },
-              {
-                icon: "material-symbols:auto-awesome",
-                title: "Modern Interface",
-                description: "Clean, intuitive design that works on all your devices"
-              }
-            ].map((feature, index) => (
-              <div key={index} className="glass-card group p-8 bg-white/10 dark:bg-white/5 border-white/20 dark:border-white/10 hover:bg-white/20 dark:hover:bg-white/10 transition-all duration-300">
-                <Icon icon={feature.icon} className="h-12 w-12 text-blue-600 mb-6 group-hover:scale-110 transition-transform drop-shadow-lg" />
-                <h3 className="text-xl font-semibold mb-3 text-foreground">{feature.title}</h3>
-                <p className="text-foreground/70">{feature.description}</p>
-              </div>
-            ))}
+            {/* Feature Cards */}
+            <Card className="group hover:shadow-2xl transition-all duration-300 border-0 bg-card/80 backdrop-blur-sm">
+              <CardHeader>
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <FileText className="h-6 w-6 text-white" />
+                </div>
+                <CardTitle className="text-xl">Rich Text Editor</CardTitle>
+                <CardDescription>
+                  Monaco-powered editor with syntax highlighting for 25+ languages, auto-completion, and themes.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="group hover:shadow-2xl transition-all duration-300 border-0 bg-card/80 backdrop-blur-sm">
+              <CardHeader>
+                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <Share className="h-6 w-6 text-white" />
+                </div>
+                <CardTitle className="text-xl">Instant Sharing</CardTitle>
+                <CardDescription>
+                  Share with a single click. Generate beautiful, shareable links that work instantly across all devices.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="group hover:shadow-2xl transition-all duration-300 border-0 bg-card/80 backdrop-blur-sm">
+              <CardHeader>
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <Lock className="h-6 w-6 text-white" />
+                </div>
+                <CardTitle className="text-xl">Privacy First</CardTitle>
+                <CardDescription>
+                  Your data stays yours. Public sharing only when you want it, with expiration options for sensitive content.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="group hover:shadow-2xl transition-all duration-300 border-0 bg-card/80 backdrop-blur-sm">
+              <CardHeader>
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <Zap className="h-6 w-6 text-white" />
+                </div>
+                <CardTitle className="text-xl">Lightning Fast</CardTitle>
+                <CardDescription>
+                  Built for speed. Instant loading, real-time saving, and optimized for the best user experience.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="group hover:shadow-2xl transition-all duration-300 border-0 bg-card/80 backdrop-blur-sm">
+              <CardHeader>
+                <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <Users className="h-6 w-6 text-white" />
+                </div>
+                <CardTitle className="text-xl">Team Friendly</CardTitle>
+                <CardDescription>
+                  Perfect for teams. Share code snippets, documentation, and collaborate seamlessly with your team.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="group hover:shadow-2xl transition-all duration-300 border-0 bg-card/80 backdrop-blur-sm">
+              <CardHeader>
+                <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <Globe className="h-6 w-6 text-white" />
+                </div>
+                <CardTitle className="text-xl">Anonymous Mode</CardTitle>
+                <CardDescription>
+                  Share without signing up. Create and share instantly without creating an account or leaving any traces.
+                </CardDescription>
+              </CardHeader>
+            </Card>
           </div>
         </div>
       </section>
 
-      {/* Pricing Teaser */}
+      {/* Quick Start Section */}
       <section className="py-20 px-4">
         <div className="container max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Simple, transparent pricing
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              Get started in
+              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> seconds</span>
             </h2>
-            <p className="text-xl text-foreground/70">
-              Start free, upgrade when you need more
+            <p className="text-xl text-muted-foreground">
+              Three simple ways to start sharing your content
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-2 gap-8">
-            <div className="glass-card p-8 bg-white/10 dark:bg-white/5 border-white/20 dark:border-white/10">
-              <h3 className="text-2xl font-bold mb-2">Free</h3>
-              <p className="text-foreground/70 mb-6">Perfect for personal use</p>
-              <ul className="space-y-3 mb-8">
-                {[
-                  "Unlimited public notes",
-                  "Anonymous sharing",
-                  "Basic syntax highlighting",
-                  "7-day link expiry"
-                ].map((feature, index) => (
-                  <li key={index} className="flex items-center">
-                    <Icon icon="material-symbols:check-circle" className="h-4 w-4 text-green-600 mr-3" />
-                    <span>{feature}</span>
+            <Card className="relative overflow-hidden group hover:shadow-2xl transition-all duration-300">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10"></div>
+              <CardContent className="relative p-8">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mb-6">
+                  <Code className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4">For Registered Users</h3>
+                <ul className="space-y-3 mb-6">
+                  <li className="flex items-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                    <span>Full file management</span>
                   </li>
-                ))}
-              </ul>
-              <Link href="/auth/register">
-                <IconButton 
-                  className="w-full" 
-                  icon="rocket-launch" 
-                  tooltip="Start using our platform for free"
-                >
-                  Get Started Free
-                </IconButton>
-              </Link>
-            </div>
-            
-            <div className="glass-card p-8 bg-gradient-to-br from-blue-500/20 to-purple-500/20 dark:from-blue-500/10 dark:to-purple-500/10 border-white/30 dark:border-white/20 relative backdrop-blur-lg">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg backdrop-blur-sm">
-                  Popular
-                </span>
-              </div>
-              <h3 className="text-2xl font-bold mb-2">Pro</h3>
-              <p className="text-foreground/70 mb-6">For professionals and teams</p>
-              <ul className="space-y-3 mb-8">
-                {[
-                  "Everything in Free",
-                  "Private notes & folders",
-                  "Advanced sharing controls",
-                  "Unlimited storage",
-                  "Priority support"
-                ].map((feature, index) => (
-                  <li key={index} className="flex items-center">
-                    <Icon icon="material-symbols:check-circle" className="h-4 w-4 text-green-600 mr-3" />
-                    <span>{feature}</span>
+                  <li className="flex items-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                    <span>Private and public sharing</span>
                   </li>
-                ))}
-              </ul>
-              <Link href="/pricing">
-                <IconButton 
-                  className="w-full" 
-                  icon="visibility" 
-                  tooltip="View detailed pricing information"
-                >
-                  View Pricing
-                </IconButton>
-              </Link>
-            </div>
+                  <li className="flex items-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                    <span>Custom URLs and themes</span>
+                  </li>
+                </ul>
+                <Link href="/auth/register">
+                  <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                    <ArrowRight className="mr-2 h-4 w-4" />
+                    Sign up free
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden group hover:shadow-2xl transition-all duration-300">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-teal-500/10"></div>
+              <CardContent className="relative p-8">
+                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center mb-6">
+                  <Eye className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4">Anonymous Mode</h3>
+                <ul className="space-y-3 mb-6">
+                  <li className="flex items-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                    <span>No signup required</span>
+                  </li>
+                  <li className="flex items-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                    <span>Instant sharing</span>
+                  </li>
+                  <li className="flex items-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                    <span>Perfect for quick notes</span>
+                  </li>
+                </ul>
+                <Link href="/anonymous">
+                  <Button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
+                    <ArrowRight className="mr-2 h-4 w-4" />
+                    Try without signup
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
@@ -192,80 +238,29 @@ export default function HomePage() {
       <section className="py-20 px-4 bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="container max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Ready to share your ideas?
+            Ready to start sharing?
           </h2>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of developers, students, and professionals who trust Notta.in
+            Join thousands of developers, writers, and teams who trust Notta.in for their sharing needs.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/auth/register">
-              <Button size="lg" variant="secondary" className="w-full sm:w-auto">
-                Create Free Account
+              <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-6">
+                <Play className="mr-2 h-5 w-5" />
+                Get Started Free
               </Button>
             </Link>
-            <Link href="/anonymous">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-blue-600">
-                Try Anonymous Mode
+            <Link href="/explore">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10 text-lg px-8 py-6">
+                <Eye className="mr-2 h-5 w-5" />
+                Explore Public Files
               </Button>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 px-4 border-t bg-muted/30">
-        <div className="container max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <div className="h-6 w-6 rounded bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-                  <Icon icon="material-symbols:description" className="h-3 w-3 text-white" />
-                </div>
-                <span className="font-bold">Notta.in</span>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Fast, secure, and beautiful note sharing for everyone.
-              </p>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-3">Product</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="/anonymous" className="hover:text-foreground transition-colors">Anonymous Notes</Link></li>
-                <li><Link href="/pricing" className="hover:text-foreground transition-colors">Pricing</Link></li>
-                <li><Link href="/auth/register" className="hover:text-foreground transition-colors">Sign Up</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-3">Company</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="/contact" className="hover:text-foreground transition-colors">Contact</Link></li>
-                <li><Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link></li>
-                <li><Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-3">Resources</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground transition-colors">Documentation</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Status</a></li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="mt-8 pt-8 border-t flex flex-col md:flex-row justify-between items-center">
-            <p className="text-sm text-muted-foreground">
-              © 2025 Notta.in. All rights reserved.
-            </p>
-            <div className="flex items-center space-x-4 mt-4 md:mt-0">
-              <span className="text-sm text-muted-foreground">Made with ❤️ for the community</span>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

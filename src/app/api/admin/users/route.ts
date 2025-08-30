@@ -25,8 +25,32 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Get all users with file counts
+    // Pagination parameters
+    const url = new URL(request.url)
+    const page = parseInt(url.searchParams.get('page') || '1')
+    const limit = parseInt(url.searchParams.get('limit') || '20')
+    const search = url.searchParams.get('search') || ''
+    const skip = (page - 1) * limit
+
+    // Build search filter
+    let matchFilter = {}
+    if (search) {
+      matchFilter = {
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { username: { $regex: search, $options: 'i' } },
+          { email: { $regex: search, $options: 'i' } }
+        ]
+      }
+    }
+
+    // Get total count for pagination
+    const totalCount = await User.countDocuments(matchFilter)
+    const totalPages = Math.ceil(totalCount / limit)
+
+    // Get users with file counts and pagination
     const users = await User.aggregate([
+      { $match: matchFilter },
       {
         $lookup: {
           from: 'files',
@@ -46,10 +70,22 @@ export async function GET(request: NextRequest) {
           filesCount: { $size: '$files' }
         }
       },
-      { $sort: { createdAt: -1 } }
+      { $sort: { createdAt: -1 } },
+      { $skip: skip },
+      { $limit: limit }
     ])
 
-    return NextResponse.json(users)
+    return NextResponse.json({
+      users,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalCount,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+        limit
+      }
+    })
   } catch (error) {
     console.error('Admin users fetch error:', error)
     return NextResponse.json(

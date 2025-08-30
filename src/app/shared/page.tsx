@@ -56,13 +56,18 @@ export default function SharedFilesPage() {
     }
 
     const copyShareLink = async (file: SharedFile, useSlug = true) => {
+        if (typeof window === 'undefined' || !navigator.clipboard) {
+            toast.error('Copy not available')
+            return
+        }
+        
         const url = `${window.location.origin}/share/${useSlug ? file.slug : file.shareCode}`
         try {
             await navigator.clipboard.writeText(url)
             toast.success('Link copied to clipboard!')
-    } catch {
-      toast.error('Failed to copy link')
-    }
+        } catch {
+            toast.error('Failed to copy link')
+        }
     }
 
     const unshareFile = async (file: SharedFile) => {
@@ -284,7 +289,7 @@ export default function SharedFilesPage() {
                                             <div className="flex items-center space-x-2">
                                                 <label className="text-xs text-muted-foreground min-w-[80px]">Pretty URL:</label>
                                                 <Input
-                                                    value={`${window.location.origin}/share/${file.slug}`}
+                                                    value={typeof window !== 'undefined' ? `${window.location.origin}/share/${file.slug}` : `/share/${file.slug}`}
                                                     readOnly
                                                     className="text-xs h-8 flex-1"
                                                 />
@@ -299,7 +304,7 @@ export default function SharedFilesPage() {
                                             <div className="flex items-center space-x-2">
                                                 <label className="text-xs text-muted-foreground min-w-[80px]">Share Code:</label>
                                                 <Input
-                                                    value={`${window.location.origin}/share/${file.shareCode}`}
+                                                    value={typeof window !== 'undefined' ? `${window.location.origin}/share/${file.shareCode}` : `/share/${file.shareCode}`}
                                                     readOnly
                                                     className="text-xs h-8 flex-1"
                                                 />

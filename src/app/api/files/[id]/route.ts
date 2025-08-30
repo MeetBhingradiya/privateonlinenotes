@@ -46,7 +46,8 @@ export async function PUT(
 
     const { id } = await context.params
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string }
-    const { content } = await request.json()
+    const body = await request.json()
+    const { content, language } = body
 
     const file = await File.findOne({
       _id: id,
@@ -57,22 +58,31 @@ export async function PUT(
       return NextResponse.json({ message: 'File not found' }, { status: 404 })
     }
 
-    // Save current version before updating
-    if (file.content !== content) {
-      file.versions.push({
-        content: file.content,
-        createdAt: new Date(),
-        createdBy: decoded.userId,
-      })
+    // Handle content updates
+    if (content !== undefined) {
+      // Save current version before updating
+      if (file.content !== content) {
+        file.versions.push({
+          content: file.content,
+          createdAt: new Date(),
+          createdBy: decoded.userId,
+        })
 
-      // Keep only last 5 versions
-      if (file.versions.length > 5) {
-        file.versions = file.versions.slice(-5)
+        // Keep only last 5 versions
+        if (file.versions.length > 5) {
+          file.versions = file.versions.slice(-5)
+        }
       }
+
+      file.content = content
+      file.updatedAt = new Date()
     }
 
-    file.content = content
-    file.updatedAt = new Date()
+    // Handle language updates
+    if (language !== undefined) {
+      file.language = language
+    }
+
     await file.save()
 
     return NextResponse.json(file)

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Editor } from '@monaco-editor/react'
 import { Button } from '@/components/ui/button'
 import { Download, Share, Settings } from 'lucide-react'
@@ -8,6 +8,7 @@ import { Icon } from '@iconify/react'
 import { useTheme } from 'next-themes'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import toast from 'react-hot-toast'
+import * as monaco from 'monaco-editor'
 
 interface FileItem {
     _id: string
@@ -32,14 +33,22 @@ export function MonacoEditor({ file, onSave, onChange, readOnly = false }: Monac
     const [saving, setSaving] = useState(false)
     const [selectedLanguage, setSelectedLanguage] = useState<string>('')
     const [showLanguageSelect, setShowLanguageSelect] = useState(false)
+    const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null)
+    const userChangedLanguage = useRef(false)
 
     useEffect(() => {
         setContent(file.content || '')
         setHasChanges(false)
-        // Set initial language from file extension or stored language
-        const detectedLanguage = file.language || getLanguage(file.name)
-        setSelectedLanguage(detectedLanguage)
-    }, [file])
+        
+        // Only auto-detect language if user hasn't manually changed it for this file
+        if (!userChangedLanguage.current) {
+            const detectedLanguage = file.language || getLanguage(file.name)
+            setSelectedLanguage(detectedLanguage)
+        }
+        
+        // Reset user language change flag when switching files
+        userChangedLanguage.current = false
+    }, [file._id, file.content, file.language, file.name]) // Include all used file properties
 
     const handleContentChange = (value: string | undefined) => {
         if (!readOnly) {
@@ -68,35 +77,38 @@ export function MonacoEditor({ file, onSave, onChange, readOnly = false }: Monac
         }
     }, [onSave, content, file])
 
-    // Handle keyboard shortcuts
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            // Ctrl+S to save
-            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-                e.preventDefault()
-                if (hasChanges && !saving) {
-                    handleSave()
-                }
+    // Handle Monaco editor setup and keyboard shortcuts
+    const handleEditorDidMount = (editor: monaco.editor.IStandaloneCodeEditor) => {
+        editorRef.current = editor
+        
+        // Add custom keyboard shortcuts to the editor
+        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+            if (hasChanges && !saving) {
+                handleSave()
             }
-        }
-
-        window.addEventListener('keydown', handleKeyDown)
-        return () => window.removeEventListener('keydown', handleKeyDown)
-    }, [hasChanges, handleSave, saving])
+        })
+        
+        // Focus the editor for immediate typing
+        editor.focus()
+    }
 
     const availableLanguages = [
+        { value: 'plaintext', label: 'Plain Text' },
         { value: 'javascript', label: 'JavaScript' },
         { value: 'typescript', label: 'TypeScript' },
         { value: 'python', label: 'Python' },
         { value: 'html', label: 'HTML' },
         { value: 'css', label: 'CSS' },
         { value: 'scss', label: 'SCSS' },
+        { value: 'less', label: 'Less' },
         { value: 'json', label: 'JSON' },
         { value: 'markdown', label: 'Markdown' },
         { value: 'xml', label: 'XML' },
         { value: 'sql', label: 'SQL' },
         { value: 'yaml', label: 'YAML' },
         { value: 'shell', label: 'Shell/Bash' },
+        { value: 'powershell', label: 'PowerShell' },
+        { value: 'bat', label: 'Batch' },
         { value: 'php', label: 'PHP' },
         { value: 'java', label: 'Java' },
         { value: 'cpp', label: 'C++' },
@@ -108,32 +120,60 @@ export function MonacoEditor({ file, onSave, onChange, readOnly = false }: Monac
         { value: 'swift', label: 'Swift' },
         { value: 'kotlin', label: 'Kotlin' },
         { value: 'dart', label: 'Dart' },
-        { value: 'plaintext', label: 'Plain Text' },
+        { value: 'ini', label: 'INI/Config' },
+        { value: 'toml', label: 'TOML' },
     ]
 
     const getLanguage = (filename: string): string => {
         const ext = filename.split('.').pop()?.toLowerCase()
         const languageMap: Record<string, string> = {
+            // JavaScript/TypeScript
             js: 'javascript',
             jsx: 'javascript',
+            mjs: 'javascript',
             ts: 'typescript',
             tsx: 'typescript',
+            
+            // Python
             py: 'python',
+            pyw: 'python',
+            
+            // Web technologies
             html: 'html',
+            htm: 'html',
             css: 'css',
             scss: 'scss',
+            sass: 'scss',
+            less: 'less',
+            
+            // Data formats
             json: 'json',
-            md: 'markdown',
             xml: 'xml',
-            sql: 'sql',
             yaml: 'yaml',
             yml: 'yaml',
+            
+            // Markup
+            md: 'markdown',
+            markdown: 'markdown',
+            
+            // Shell/Command
             sh: 'shell',
             bash: 'shell',
+            zsh: 'shell',
+            fish: 'shell',
+            ps1: 'powershell',
+            bat: 'bat',
+            cmd: 'bat',
+            
+            // Programming languages
             php: 'php',
             java: 'java',
             cpp: 'cpp',
+            cxx: 'cpp',
+            cc: 'cpp',
             c: 'c',
+            h: 'c',
+            hpp: 'cpp',
             cs: 'csharp',
             go: 'go',
             rs: 'rust',
@@ -141,6 +181,19 @@ export function MonacoEditor({ file, onSave, onChange, readOnly = false }: Monac
             swift: 'swift',
             kt: 'kotlin',
             dart: 'dart',
+            
+            // SQL
+            sql: 'sql',
+            
+            // Configuration
+            ini: 'ini',
+            cfg: 'ini',
+            conf: 'ini',
+            toml: 'toml',
+            
+            // Others
+            txt: 'plaintext',
+            log: 'plaintext',
         }
         return languageMap[ext || ''] || 'plaintext'
     }
@@ -148,6 +201,19 @@ export function MonacoEditor({ file, onSave, onChange, readOnly = false }: Monac
     const handleLanguageChange = (newLanguage: string) => {
         setSelectedLanguage(newLanguage)
         setShowLanguageSelect(false)
+        userChangedLanguage.current = true // Mark that user manually changed language
+        
+        // Update the file's language preference
+        if (file.language !== newLanguage) {
+            // Save language preference to the file
+            fetch(`/api/files/${file._id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ language: newLanguage }),
+            }).catch(() => {
+                // Silently fail if language update fails
+            })
+        }
     }
 
     const handleDownload = () => {
@@ -256,6 +322,7 @@ export function MonacoEditor({ file, onSave, onChange, readOnly = false }: Monac
                     language={selectedLanguage}
                     value={content}
                     onChange={handleContentChange}
+                    onMount={handleEditorDidMount}
                     theme={theme === 'dark' ? 'vs-dark' : 'vs-light'}
                     options={{
                         fontSize: 14,
