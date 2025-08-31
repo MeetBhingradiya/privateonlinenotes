@@ -90,6 +90,7 @@ export async function POST(request: NextRequest) {
             username: user.username,
             name: user.name,
             plan: user.plan,
+            role: user.role,
             avatar: user.avatar,
         })
 

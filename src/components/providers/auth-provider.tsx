@@ -7,7 +7,8 @@ interface User {
     email?: string
     username: string
     name?: string
-    plan: 'free' | 'pro' | 'premium'
+    plan: 'free' | 'premium' | 'enterprise'
+    role: 'user' | 'moderator' | 'admin'
     avatar?: string
 }
 

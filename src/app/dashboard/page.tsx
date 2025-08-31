@@ -466,20 +466,20 @@ export default function DashboardPage() {
                 {!sidebarCollapsed && (
                     <div className={`mb-6 p-4 glass-card border-white/20 dark:border-white/10 rounded-xl transition-all duration-300 ${user.plan === 'premium'
                         ? 'bg-gradient-to-br from-amber-500/20 via-orange-500/15 to-yellow-500/20 dark:from-amber-500/10 dark:via-orange-500/8 dark:to-yellow-500/10 border-amber-300/30 shadow-amber-500/20 shadow-lg animate-pulse'
-                        : user.plan === 'pro'
+                        : user.plan === 'enterprise'
                             ? 'bg-gradient-to-br from-green-500/20 via-emerald-500/15 to-teal-500/20 dark:from-green-500/10 dark:via-emerald-500/8 dark:to-teal-500/10 border-green-300/30 shadow-green-500/20 shadow-lg'
                             : 'bg-gradient-to-br from-blue-500/15 via-purple-500/10 to-indigo-500/15 dark:from-blue-500/8 dark:via-purple-500/5 dark:to-indigo-500/8 border-blue-300/20'
                         }`}>
                         <div className="flex items-center space-x-3">
                             <div className={`h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-300 ${user.plan === 'premium'
                                 ? 'bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/30 animate-bounce'
-                                : user.plan === 'pro'
+                                : user.plan === 'enterprise'
                                     ? 'bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-500/30'
                                     : 'bg-gradient-to-br from-blue-500 to-purple-600 shadow-md'
                                 }`}>
                                 <Icon
                                     icon={user.plan === 'premium' ? "material-symbols:workspace-premium" :
-                                        user.plan === 'pro' ? "material-symbols:star" :
+                                        user.plan === 'enterprise' ? "material-symbols:star" :
                                             "material-symbols:person"}
                                     className={`h-4 w-4 text-white ${user.plan === 'premium' ? 'animate-spin' : ''}`}
                                 />
@@ -489,7 +489,7 @@ export default function DashboardPage() {
                                 <div className="text-xs text-foreground/60 flex items-center space-x-1">
                                     <span className={`capitalize font-semibold ${user.plan === 'premium'
                                         ? 'text-amber-600 dark:text-amber-400'
-                                        : user.plan === 'pro'
+                                        : user.plan === 'enterprise'
                                             ? 'text-green-600 dark:text-green-400'
                                             : 'text-blue-600 dark:text-blue-400'
                                         }`}>
@@ -499,7 +499,7 @@ export default function DashboardPage() {
                                     {user.plan === 'premium' && (
                                         <Icon icon="material-symbols:auto-awesome" className="h-3 w-3 text-amber-500 animate-pulse" />
                                     )}
-                                    {user.plan === 'pro' && (
+                                    {user.plan === 'enterprise' && (
                                         <Icon icon="material-symbols:verified" className="h-3 w-3 text-green-500" />
                                     )}
                                 </div>
@@ -513,13 +513,13 @@ export default function DashboardPage() {
                     <div className="mb-4 flex justify-center">
                         <div className={`h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-300 ${user.plan === 'premium'
                             ? 'bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/40 animate-bounce'
-                            : user.plan === 'pro'
+                            : user.plan === 'enterprise'
                                 ? 'bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-500/40 hover:scale-110'
                                 : 'bg-gradient-to-br from-blue-500 to-purple-600 shadow-md hover:scale-105'
                             }`}>
                             <Icon
                                 icon={user.plan === 'premium' ? "material-symbols:workspace-premium" :
-                                    user.plan === 'pro' ? "material-symbols:star" :
+                                    user.plan === 'enterprise' ? "material-symbols:star" :
                                         "material-symbols:person"}
                                 className={`h-4 w-4 text-white ${user.plan === 'premium' ? 'animate-spin' : ''}`}
                             />
@@ -563,7 +563,7 @@ export default function DashboardPage() {
                         {/* Plan indicator with enhanced animations */}
                         <div className={`w-3 h-3 rounded-full shadow-lg transition-all duration-300 ${user.plan === 'premium'
                             ? 'bg-gradient-to-r from-amber-400 to-orange-500 animate-pulse shadow-amber-500/50'
-                            : user.plan === 'pro'
+                            : user.plan === 'enterprise'
                                 ? 'bg-gradient-to-r from-green-400 to-emerald-500 shadow-green-500/50 animate-bounce'
                                 : 'bg-gradient-to-r from-blue-400 to-purple-500 shadow-blue-500/50'
                             }`} title={`${user.plan || 'Free'} Plan`}>
@@ -578,9 +578,9 @@ export default function DashboardPage() {
                                 <div className="absolute inset-0 w-2 h-2 rounded-full bg-gradient-to-r from-purple-300 to-pink-400 animate-ping opacity-75"></div>
                             </div>
                         )}
-                        {/* Pro glow effect */}
-                        {user.plan === 'pro' && (
-                            <div className="w-1 h-1 rounded-full bg-green-300 animate-pulse opacity-60" title="Pro Features Active"></div>
+                        {/* Enterprise glow effect */}
+                        {user.plan === 'enterprise' && (
+                            <div className="w-1 h-1 rounded-full bg-green-300 animate-pulse opacity-60" title="Enterprise Features Active"></div>
                         )}
                         {/* Premium sparkle effect */}
                         {user.plan === 'premium' && (
