@@ -40,19 +40,20 @@ export default function ForgotPasswordPage() {
 
             const result = await response.json()
             
-            if (response.ok) {
+            if (response.ok || result.success) {
                 setEmailSent(true)
-                toast.success('Password reset email sent!')
+                toast.success(result.message || 'Password reset email sent!')
                 
                 // In development, show the reset link if provided
-                if (result.resetLink && process.env.NODE_ENV === 'development') {
+                if (result.resetLink) {
                     setDevResetLink(result.resetLink)
-                    toast.success('Development: Reset link copied to state!')
+                    console.log('Development Reset Link:', result.resetLink)
                 }
             } else {
                 toast.error(result.message || 'Failed to send reset email')
             }
-        } catch {
+        } catch (error) {
+            console.error('Forgot password error:', error)
             toast.error('Failed to send reset email')
         } finally {
             setLoading(false)
@@ -152,7 +153,7 @@ export default function ForgotPasswordPage() {
                             </div>
                             
                             {/* Development: Show direct reset link */}
-                            {devResetLink && process.env.NODE_ENV === 'development' && (
+                            {devResetLink && (
                                 <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
                                     <p className="text-blue-800 dark:text-blue-200 font-medium mb-2 text-sm">
                                         🔧 Development Mode: Direct Reset Link
@@ -165,6 +166,9 @@ export default function ForgotPasswordPage() {
                                     >
                                         {devResetLink}
                                     </a>
+                                    <p className="text-blue-700 dark:text-blue-300 text-xs mt-2">
+                                        Email service not configured. Click the link above to reset your password.
+                                    </p>
                                 </div>
                             )}
                             

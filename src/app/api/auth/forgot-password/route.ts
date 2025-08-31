@@ -38,27 +38,54 @@ export async function POST(request: NextRequest) {
         // Create reset link
         const resetLink = `${request.nextUrl.origin}/auth/reset-password?token=${resetToken}`
         
-        // Send password reset email
-        const emailResult = await emailService.sendPasswordResetEmail(
-            email, 
-            resetLink, 
-            user.username
-        )
+        // Try to send password reset email
+        try {
+            const emailResult = await emailService.sendPasswordResetEmail(
+                email, 
+                resetLink, 
+                user.username
+            )
 
-        if (!emailResult.success) {
-            console.error('Failed to send password reset email:', emailResult.error)
-            // In production, you might want to still return success to not reveal if email exists
-            // For now, we'll return an error to help with debugging
+            if (!emailResult.success) {
+                console.error('Failed to send password reset email:', emailResult.error)
+                
+                // In development, return the reset link directly
+                if (process.env.NODE_ENV === 'development') {
+                    return NextResponse.json({ 
+                        message: 'Email service not configured. Use the reset link below (development only):',
+                        resetLink,
+                        success: true
+                    })
+                }
+                
+                // In production, return error but don't reveal if email exists
+                return NextResponse.json(
+                    { message: 'Email service is currently unavailable. Please try again later.' },
+                    { status: 500 }
+                )
+            }
+        } catch (emailError) {
+            console.error('Email service error:', emailError)
+            
+            // In development, return the reset link directly
+            if (process.env.NODE_ENV === 'development') {
+                return NextResponse.json({ 
+                    message: 'Email service not configured. Use the reset link below (development only):',
+                    resetLink,
+                    success: true
+                })
+            }
+            
+            // In production, return error
             return NextResponse.json(
-                { message: 'Failed to send reset email. Please try again later.' },
+                { message: 'Email service is currently unavailable. Please try again later.' },
                 { status: 500 }
             )
         }
 
         return NextResponse.json({ 
             message: 'If an account with that email exists, we\'ve sent a password reset link.',
-            // For development only - remove in production
-            // resetLink: process.env.NODE_ENV === 'development' ? resetLink : undefined
+            success: true
         })
 
     } catch (error) {

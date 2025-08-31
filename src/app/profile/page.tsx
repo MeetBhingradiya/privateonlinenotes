@@ -147,6 +147,7 @@ export default function ProfilePage() {
     const onPasswordSubmit = async (data: PasswordFormData) => {
         setPasswordLoading(true)
         try {
+            console.log('Submitting password change request...')
             const response = await fetch('/api/user/password', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -156,14 +157,21 @@ export default function ProfilePage() {
                 }),
             })
 
-            if (response.ok) {
+            const result = await response.json()
+            console.log('Password change response:', { status: response.status, result })
+
+            if (response.ok || result.success) {
                 toast.success('Password updated successfully!')
                 passwordForm.reset()
+                setShowCurrentPassword(false)
+                setShowNewPassword(false)
+                setShowConfirmPassword(false)
             } else {
-                const error = await response.json()
-                toast.error(error.message || 'Failed to update password')
+                console.error('Password change failed:', result)
+                toast.error(result.message || 'Failed to update password')
             }
-        } catch {
+        } catch (error) {
+            console.error('Password change error:', error)
             toast.error('An error occurred. Please try again.')
         } finally {
             setPasswordLoading(false)

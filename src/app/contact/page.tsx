@@ -117,7 +117,7 @@ export default function ContactPage() {
                                         </div>
                                         <div>
                                             <p className="font-semibold text-gray-900 dark:text-gray-100">Email</p>
-                                            <p className="text-blue-600 dark:text-blue-400 font-medium">laksh@notta.in</p>
+                                            <p className="text-blue-600 dark:text-blue-400 font-medium">contact@notta.in</p>
                                             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                                                 We typically respond within 24 hours
                                             </p>
